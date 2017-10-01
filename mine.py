@@ -221,6 +221,16 @@ class Mine:
         except:
             assert False, str(x) + ',' + str(y)
 
+    def create_cave(self, center_x, center_y, hole_size):
+        for x in range(center_x - hole_size, center_x + hole_size + 1):
+            if x < 0 or x >= self.width:
+                continue
+            for y in range(center_y - hole_size, center_y + hole_size + 1):
+                if y < 0 or y >= self.height:
+                    continue
+                if Utils.distance(center_x, center_y, x, y) <= hole_size:
+                    self.set_material(x, y, Space())
+
     def action(self):
         for level in self.mine:
             for cell in level:
@@ -406,14 +416,7 @@ class Wizard(Creature):
     def place_in_mine(self, mine):
         Creature.place_in_mine(self, mine)
         hole_size = random.randint(2, 6)
-        for x in range(self.x - hole_size, self.x + hole_size + 1):
-            if x < 0 or x >= self.mine.width:
-                continue
-            for y in range(self.y - hole_size, self.y + hole_size + 1):
-                if y < 0 or y >= self.mine.height:
-                    continue
-                if Utils.distance(self.x, self.y, x, y) <= hole_size:
-                    self.mine.set_material(x, y, Space())
+        mine.create_cave(self.x, self.y, hole_size)
 
     def look_at(self, x, y):
         creature = self.mine.get_creature(x, y)
@@ -629,6 +632,10 @@ m = Mine()
 for i in range(random.randint(1, 200)):
     miner = Miner(random.randint(0, m.width - 1), 0)
     m.add_creature(miner)
+
+for i in range(random.randint(4, 10)):
+    hole_size = random.randint(4, 8)
+    m.create_cave(random.randint(0, m.width - 1), random.randint(0, m.height - 1), hole_size)
 
 for i in range(random.randint(1, 3)):
     saboteur = Saboteur(random.randint(0, m.width - 1), int(m.height / 2))
