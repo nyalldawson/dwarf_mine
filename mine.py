@@ -313,13 +313,13 @@ class Tricked(Enchantment):
 class SaboteurSpell(Tricked):
     def __init__(self):
         Tricked.__init__(self)
+        self.time = math.inf
 
     def place_on_creature(self, creature):
         Enchantment.place_on_creature(self, creature)
 
 
 class Action:
-
     def __init__(self):
         self.creature = None
 
