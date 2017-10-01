@@ -245,7 +245,7 @@ class Mine:
 
         self.print_current_level()
 
-        if len([i for i in self.items if isinstance(i,Treasure)]) == 0:
+        if len([i for i in self.items if isinstance(i, Treasure)]) == 0:
             for i in range(2):
                 print('Dwarves won!!')
             sys.exit()
@@ -330,8 +330,25 @@ class Action:
         pass
 
 
-class GoToAction(Action):
+class SleepAction(Action):
+    def __init__(self):
+        Action.__init__(self)
+        self.duration = random.randint(100, 300)
+        self.original_char = None
 
+    def added_to_creature(self, creature):
+        Action.added_to_creature(self, creature)
+        self.original_char = creature.char
+        creature.char = 'Z'
+
+    def do(self):
+        self.duration -= 1
+        if self.duration == 0:
+            self.creature.char = self.original_char
+            self.creature.remove_action(self)
+
+
+class GoToAction(Action):
     def __init__(self, x, y):
         Action.__init__(self)
         self.x = x
@@ -504,55 +521,20 @@ class Miner(Creature):
         toughness = self.mine.material(x, y).toughness
         if not toughness:
             return False
-        #        assert toughness==1, toughness
+
         return random.randint(1, toughness * (
             self.likes_to_go_horizontal * abs(self.x - x) + abs(self.y - y) * self.likes_to_go_vertical)) == 1
-
-    def move(self):
-        Creature.move(self)
-
-        new_x = self.x
-        new_y = self.y
-
-        self.think_about_changing_vertical_direction()
-        self.think_about_changing_horizontal_direction()
-
-        changed_level = False
-        if not changed_level and random.randint(1, 2) == 1:
-            new_x += self.x_dir
-            changed_level = True
-
-        if not changed_level and random.randint(1, 2) == 1:
-            new_y = new_y + self.y_dir
-
-        if new_x == self.x and new_y == self.y:
-            return
-
-        if not self.mine.is_valid_location(new_x, new_y):
-            self.frustration += 1
-            return
-
-        if not self.can_move(new_x, new_y):
-            self.frustration += 1
-            return
-
-        if self.mine.is_empty(new_x, new_y):
-            self.move_to(new_x, new_y)
-            self.frustration = 0
-
-        else:
-            # reluctant to dig
-            if self.decided_to_dig(new_x, new_y):
-                self.move_to(new_x, new_y)
-                self.mine.mine[self.y][self.x] = Space()
-                self.frustration = 0
-            else:
-                self.frustration += 1
 
     def moved_from(self, x, y):
         if self.has_enchantment(Tricked):
             if random.randint(1, 5) == 1:
                 self.mine.set_material(x, y, Rock())
+
+    def move(self):
+        if random.randint(1, 1000) == 1:
+            self.push_action(SleepAction())
+
+        Creature.move(self)
 
     def move_to(self, x, y):
         old_x = self.x
@@ -567,24 +549,24 @@ class Miner(Creature):
         self.moved_from(old_x, old_y)
 
     def look_at(self, x, y):
+        self.mine.set_visibility(x, y, True)
+
         item = self.mine.get_item(x, y)
         if item is not None:
             if item.is_attractive_to(self):
-                pass
-
+                self.push_action(GoToAction(x, y))
 
 
 class Saboteur(Miner):
     def __init__(self, x, y):
         Miner.__init__(self, x, y)
-        self.char = '☹'
+        self.char = '☺'
         self.color = 2
         self.original_color = self.color
         self.enchant(SaboteurSpell())
 
 
 class Item:
-
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -595,7 +577,7 @@ class Item:
     def add_to_mine(self, mine):
         self.mine = mine
 
-    def is_attractive_to(self,creature):
+    def is_attractive_to(self, creature):
         return False
 
 
@@ -611,15 +593,16 @@ class Treasure(Item):
         hole_size = random.randint(2, 4)
         mine.create_cave(self.x, self.y, hole_size)
 
-    def is_attractive_to(self,creature):
-        if isinstance(creature,Miner):
+    def is_attractive_to(self, creature):
+        if isinstance(creature, Miner):
             return True
 
         return False
 
+
 class Map(Item):
     def __init__(self, x, y):
-        Item.__init__(self,x,y)
+        Item.__init__(self, x, y)
         self.char = 'M'
         self.color = 181
 
