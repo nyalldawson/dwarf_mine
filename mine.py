@@ -74,7 +74,7 @@ class Lava(Material):
                 if self.temperature < 100:
                     break
 
-                if self.mine.is_empty(x, y):
+                if self.mine.is_empty(x, y) or isinstance(self.mine.material(x,y),Water):
                     lava = Lava()
                     self.temperature *= 0.9
                     lava.temperature = self.temperature
@@ -92,6 +92,70 @@ class Lava(Material):
         self.temperature -= 1
         if self.temperature < 100:
             self.mine.set_material(self.x, self.y, Rock())
+
+
+class Water(Material):
+
+    def __init__(self):
+        Material.__init__(self)
+        self.char = '█'
+        self.color = 28
+
+    def action(self):
+        # flow off bottom of mine
+        if self.y == self.mine.height - 1:
+            self.mine.set_material(self.x,self.y, Space())
+            return
+
+        if self.mine.is_empty(self.x,self.y+1):
+            self.mine.set_material(self.x, self.y + 1, Water())
+            if self.y > 0 and isinstance(self.mine.material(self.x, self.y - 1), Water):
+                self.mine.set_material(self.x, self.y - 1, Space())
+            else:
+                self.mine.set_material(self.x,self.y, Space())
+            return
+
+        if self.x > 0 and self.mine.is_empty(self.x-1,self.y+1):
+            self.mine.set_material(self.x-1, self.y + 1, Water())
+            if self.x < self.mine.width -1 and isinstance(self.mine.material(self.x+1, self.y), Water):
+                self.mine.set_material(self.x+1, self.y, Space())
+            else:
+                self.mine.set_material(self.x,self.y, Space())
+            return
+
+        if self.x < self.mine.width - 1 and self.mine.is_empty(self.x+1,self.y+1):
+            self.mine.set_material(self.x+1, self.y + 1, Water())
+            if self.x > 0 and isinstance(self.mine.material(self.x-1, self.y), Water):
+                self.mine.set_material(self.x-1, self.y, Space())
+            else:
+                self.mine.set_material(self.x,self.y, Space())
+            return
+
+        if self.y > 0 and isinstance(self.mine.material(self.x,self.y-1),Water):
+            dir = -1 if random.randint(1,2)==1 else 1
+            if self.mine.is_empty(self.x+dir,self.y):
+                self.mine.set_material(self.x+dir,self.y,Water())
+                self.mine.set_material(self.x,self.y-1,Space())
+                return
+            elif self.mine.is_empty(self.x-dir,self.y):
+                self.mine.set_material(self.x-dir,self.y,Water())
+                self.mine.set_material(self.x,self.y-1,Space())
+                return
+
+        if random.randint(1,3)==1 and self.x > 0 and self.x < self.mine.width - 1:
+            dir = -1 if random.randint(1, 2) == 1 else 1
+            if self.mine.is_empty(self.x-dir,self.y) and isinstance(self.mine.material(self.x+dir, self.y),Water):
+                self.mine.set_material(self.x-dir,self.y,Water())
+                self.mine.set_material(self.x,self.y,Space())
+                return
+            elif self.mine.is_empty(self.x+dir,self.y) and isinstance(self.mine.material(self.x-dir, self.y),Water):
+                self.mine.set_material(self.x+dir,self.y,Water())
+                self.mine.set_material(self.x,self.y,Space())
+                return
+
+
+
+
 
 
 class Utils:
@@ -144,6 +208,17 @@ class Mine:
             for y in range(lava_y_start, lava_y_end):
                 for i in range(lava_start, lava_start + lava_size):
                     self.set_material(i, y, Lava())
+
+        for l in range(random.randint(1, 5)):
+            water_size = random.randint(5, 20)
+            water_start = random.randint(1, self.width - lava_size - 1)
+
+            water_y_start = random.randint(5, self.height - 1)
+            water_y_end = min(self.height-1,water_y_start+random.randint(1, 10))
+
+            for y in range(water_y_start, water_y_end):
+                for i in range(water_start, water_start + water_size):
+                    self.set_material(i, y, Water())
 
     def set_material(self, x, y, material):
         self.mine[y][x] = material
