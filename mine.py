@@ -82,7 +82,7 @@ class Lava(Material):
                     material.temperature = self.temperature * 0.0001 + material.temperature * 0.9999
                     self.temperature = t
 
-                item = self.mine.item(x, y)
+                item = self.mine.get_creature(x, y)
                 if isinstance(item, Creature):
                     item.die()
 
@@ -118,8 +118,8 @@ class Mine:
         self.colors = []
         self.build_mine()
         self.creatures = []
-        self.treasures = []
-        self.dark = True
+        self.items = []
+        self.dark = False
 
     def build_mine(self):
         for l in range(self.height):
@@ -156,9 +156,9 @@ class Mine:
     def remove_creature(self, creature):
         self.creatures.remove(creature)
 
-    def add_treasure(self, treasure):
-        self.treasures.append(treasure)
-        self.set_visibility(treasure.x, treasure.y, True)
+    def add_item(self, item):
+        self.items.append(item)
+        item.add_to_mine(self)
 
     def set_visibility(self, x, y, visibility):
         self.visibility[y * self.width + x] = visibility
@@ -199,8 +199,14 @@ class Mine:
 
         return cells
 
-    def item(self, x, y):
+    def get_creature(self, x, y):
         for m in self.creatures:
+            if m.x == x and m.y == y:
+                return m
+        return None
+
+    def get_item(self, x, y):
+        for m in self.items:
             if m.x == x and m.y == y:
                 return m
         return None
@@ -218,13 +224,14 @@ class Mine:
 
         for m in self.creatures:
             m.move()
-            for t in self.treasures:
-                if m.x == t.x and m.y == t.y:
-                    self.treasures.remove(t)
+            for i in self.items:
+                if m.x == i.x and m.y == i.y:
+                    self.items.remove(i)
+                    m.add_item(i)
 
         self.print_current_level()
 
-        if len(self.treasures) == 0:
+        if len([i for i in self.items if isinstance(i,Treasure)]) == 0:
             for i in range(2):
                 print('Dwarves won!!')
             sys.exit()
@@ -240,9 +247,9 @@ class Mine:
             current_state[m.y][m.x] = m.char
             current_colors[m.y][m.x] = m.color
 
-        for t in self.treasures:
-            current_state[t.y][t.x] = t.char
-            current_colors[t.y][t.x] = t.color
+        for i in self.items:
+            current_state[i.y][i.x] = i.char
+            current_colors[i.y][i.x] = i.color
 
         for y in range(self.height):
             for x in range(self.width):
@@ -297,6 +304,38 @@ class SaboteurSpell(Tricked):
         Enchantment.place_on_creature(self, creature)
 
 
+class Action:
+
+    def __init__(self):
+        self.creature = None
+
+    def added_to_creature(self, creature):
+        self.creature = creature
+
+    def do(self):
+        pass
+
+
+class GoToAction(Action):
+
+    def __init__(self, x, y):
+        Action.__init__(self)
+        self.x = x
+        self.y = y
+
+    def do(self):
+        if self.creature.x == self.x and self.creature.y == self.y:
+            self.creature.remove_action(self)
+
+
+class ExploreAction(Action):
+
+    def __init__(self):
+        Action.__init__(self)
+
+
+
+
 class Creature:
     def __init__(self, x, y):
         self.x = x
@@ -306,9 +345,18 @@ class Creature:
         self.color = 206
         self.original_color = 206
         self.enchantments = []
+        self.view_distance = 0
+        self.actions = []
 
     def place_in_mine(self, mine):
         self.mine = mine
+
+    def push_action(self, action):
+        self.actions.insert(0, action)
+        action.added_to_creature(self)
+
+    def remove_action(self, action):
+        self.actions.remove(action)
 
     def die(self):
         self.mine.remove_creature(self)
@@ -327,8 +375,22 @@ class Creature:
         self.enchantments.remove(enchantment)
 
     def move(self):
+        self.look()
         for e in self.enchantments:
             e.action()
+
+        if len(self.actions) > 0:
+            self.actions[0].do()
+
+    def look_at(self, x, y):
+        pass
+
+    def look(self):
+        visible_cells = self.mine.get_visible_cells(self.x, self.y, self.view_distance)
+        for c in visible_cells:
+            if self.x == c[0] and self.y == c[1]:
+                continue
+            self.look_at(c[0],c[1])
 
 
 class Wizard(Creature):
@@ -349,16 +411,12 @@ class Wizard(Creature):
                 if Utils.distance(self.x, self.y, x, y) <= hole_size:
                     self.mine.set_material(x, y, Space())
 
-    def move(self):
-        Creature.move(self)
-        # look for dwarves
-        visible_cells = self.mine.get_visible_cells(self.x, self.y, self.view_distance)
-        for c in visible_cells:
-            item = self.mine.item(c[0], c[1])
-            if isinstance(item, Miner):
-                # put a spell on him, if he doesn't have one already
-                if not item.has_enchantment(Tricked):
-                    item.enchant(Tricked())
+    def look_at(self, x, y):
+        creature = self.mine.get_creature(x, y)
+        if isinstance(creature, Miner):
+            # put a spell on him, if he doesn't have one already
+            if not creature.has_enchantment(Tricked):
+                creature.enchant(Tricked())
 
 
 class Miner(Creature):
@@ -501,6 +559,13 @@ class Miner(Creature):
 
         self.moved_from(old_x, old_y)
 
+    def look_at(self, x, y):
+        item = self.mine.get_item(x, y)
+        if item is not None:
+            if item.is_attractive_to(self):
+                pass
+
+
 
 class Saboteur(Miner):
     def __init__(self, x, y):
@@ -511,12 +576,49 @@ class Saboteur(Miner):
         self.enchant(SaboteurSpell())
 
 
-class Treasure:
+class Item:
+
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        self.char = 'X'
+        self.color = 1
+        self.mine = None
+
+    def add_to_mine(self,mine):
+        self.mine = mine
+
+    def is_attractive_to(self,creature):
+        return False
+
+
+class Treasure(Item):
+    def __init__(self, x, y):
+        Item.__init__(self,x,y)
         self.char = '☼'
         self.color = 12
+
+    def add_to_mine(self,mine):
+        Item.add_to_mine(self,mine)
+        mine.set_visibility(self.x, self.y, True)
+
+    def is_attractive_to(self,creature):
+        if isinstance(creature,Miner):
+            return True
+
+        return False
+
+class Map(Item):
+    def __init__(self, x, y):
+        Item.__init__(self,x,y)
+        self.char = 'M'
+        self.color = 181
+
+    def is_attractive_to(self,creature):
+        if isinstance(creature, Miner):
+            return True
+
+        return False
 
 
 m = Mine()
@@ -534,7 +636,12 @@ for i in range(random.randint(1, 5)):
 
 for i in range(random.randint(1, 10)):
     treasure = Treasure(random.randint(0, m.width - 1), random.randint(10, m.height - 1))
-    m.add_treasure(treasure)
+    m.add_item(treasure)
+
+for i in range(random.randint(1, 10)):
+    map = Map(random.randint(0, m.width - 1), random.randint(5, m.height - 1))
+    m.add_item(map)
+
 
 if False:
     stdscr = curses.initscr()
