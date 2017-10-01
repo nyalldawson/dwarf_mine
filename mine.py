@@ -1,12 +1,10 @@
 import random
-import time
 import curses
 import sys
-import copy
 import math
 
-class Material():
 
+class Material:
     def __init__(self):
         self.char = None
         self.color = 17
@@ -18,25 +16,24 @@ class Material():
     def action(self):
         pass
 
-class Space(Material):
 
+class Space(Material):
     def __init__(self):
         Material.__init__(self)
         self.char = '█'
         self.toughness = 0
 
-class Dirt(Material):
 
+class Dirt(Material):
     def __init__(self):
         Material.__init__(self)
         self.char = '░'
-        dirt_colors=[95]
-        self.color = dirt_colors[random.randint(0,len(dirt_colors)-1)]
+        dirt_colors = [95]
+        self.color = dirt_colors[random.randint(0, len(dirt_colors) - 1)]
         self.toughness = 1
 
 
 class Rock(Material):
-
     def __init__(self):
         Material.__init__(self)
         self.char = 'O'
@@ -45,29 +42,27 @@ class Rock(Material):
 
 
 class Lava(Material):
-
     def __init__(self):
         Material.__init__(self)
         self.char = '#'
-        lava_color = [10,161,125]
+        lava_color = [10, 161, 125]
         self.color = lava_color[random.randint(0, len(lava_color) - 1)]
-        self.temperature = random.randint(2000,100000)
-
+        self.temperature = random.randint(2000, 100000)
 
     def action(self):
         # check adjacent cells
         x_neighbors = []
         if self.x > 0:
-            x_neighbors.append(self.x-1)
+            x_neighbors.append(self.x - 1)
         x_neighbors.append(self.x)
-        if self.x < self.mine.width-1:
-            x_neighbors.append(self.x+1)
+        if self.x < self.mine.width - 1:
+            x_neighbors.append(self.x + 1)
         y_neighbors = []
         if self.y > 0:
-            y_neighbors.append(self.y-1)
+            y_neighbors.append(self.y - 1)
         y_neighbors.append(self.y)
-        if self.y < self.mine.height-1:
-            y_neighbors.append(self.y+1)
+        if self.y < self.mine.height - 1:
+            y_neighbors.append(self.y + 1)
 
         for y in y_neighbors:
             for x in x_neighbors:
@@ -76,51 +71,45 @@ class Lava(Material):
                 if self.temperature < 100:
                     break
 
-                if self.mine.is_empty(x,y):
+                if self.mine.is_empty(x, y):
                     lava = Lava()
                     self.temperature *= 0.9
                     lava.temperature = self.temperature
-                    self.mine.set_material(x,y,lava)
-                material = self.mine.material(x,y)
-                if isinstance(material,Lava):
+                    self.mine.set_material(x, y, lava)
+                material = self.mine.material(x, y)
+                if isinstance(material, Lava):
                     t = self.temperature * 0.9999 + material.temperature * 0.0001
                     material.temperature = self.temperature * 0.0001 + material.temperature * 0.9999
                     self.temperature = t
 
-                item = self.mine.item(x,y)
-                if isinstance(item,Creature):
+                item = self.mine.item(x, y)
+                if isinstance(item, Creature):
                     item.die()
-
 
         self.temperature -= 1
         if self.temperature < 100:
-            self.mine.set_material(self.x,self.y,Rock())
+            self.mine.set_material(self.x, self.y, Rock())
 
-class Utils():
+
+class Utils:
+    @staticmethod
+    def distance(x1, y1, x2, y2):
+        return math.ceil(math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)))
 
     @staticmethod
-    def distance(x1,y1,x2,y2):
-        return math.ceil(math.sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1)))
-
-    @staticmethod
-    def line_between(x1,y1,x2,y2):
-        dx = x2-x1
-        dy = y2-y1
-        dist = math.sqrt(dx*dx+dy*dy)
+    def line_between(x1, y1, x2, y2):
+        dx = x2 - x1
+        dy = y2 - y1
+        dist = math.sqrt(dx * dx + dy * dy)
         if dist == 0:
             return []
         step_dx = dx / dist
         step_dy = dy / dist
         steps = int(math.ceil(dist))
-        return [(x1+round(step_dx*i),y1+round(step_dy*i)) for i in range(1,steps)]
+        return [(x1 + round(step_dx * i), y1 + round(step_dy * i)) for i in range(1, steps)]
 
 
-
-
-
-
-class Mine():
-
+class Mine:
     def __init__(self):
         self.width = 210
         self.height = 52
@@ -140,18 +129,18 @@ class Mine():
 
         for y in range(self.height):
             for x in range(self.width):
-                self.set_material(x,y,Dirt())
+                self.set_material(x, y, Dirt())
 
-        for l in range(random.randint(1,5)):
+        for l in range(random.randint(1, 5)):
             lava_size = random.randint(5, 20)
-            lava_start = random.randint(1,self.width - lava_size-1)
+            lava_start = random.randint(1, self.width - lava_size - 1)
 
-            lava_y_start = random.randint(self.height-5,self.height-1)
+            lava_y_start = random.randint(self.height - 5, self.height - 1)
             lava_y_end = self.height
 
-            for y in range(lava_y_start,lava_y_end):
-                for i in range(lava_start, lava_start+lava_size):
-                    self.set_material(i,y,Lava())
+            for y in range(lava_y_start, lava_y_end):
+                for i in range(lava_start, lava_start + lava_size):
+                    self.set_material(i, y, Lava())
 
     def set_material(self, x, y, material):
         self.mine[y][x] = material
@@ -162,28 +151,28 @@ class Mine():
     def add_creature(self, creature):
         self.creatures.append(creature)
         creature.place_in_mine(self)
-        self.set_material(creature.x,creature.y,Space())
+        self.set_material(creature.x, creature.y, Space())
 
     def remove_creature(self, creature):
         self.creatures.remove(creature)
 
     def add_treasure(self, treasure):
         self.treasures.append(treasure)
-        self.set_visibility(treasure.x,treasure.y,True)
+        self.set_visibility(treasure.x, treasure.y, True)
 
-    def set_visibility(self,x,y,visibility):
-        self.visibility[y*self.width+x]=visibility
+    def set_visibility(self, x, y, visibility):
+        self.visibility[y * self.width + x] = visibility
 
     def is_empty(self, x, y):
         return isinstance(self.mine[y][x], Space)
 
     def is_valid_location(self, x, y):
-        return x >= 0 and x < self.width and y >=0 and y < self.height
+        return 0 <= x < self.width and 0 <= y < self.height
 
-    def is_visible_from(self,x1,y1,x2,y2):
-        line = Utils.line_between(x1,y1,x2,y2)
+    def is_visible_from(self, x1, y1, x2, y2):
+        line = Utils.line_between(x1, y1, x2, y2)
         for pt in line:
-            if not self.is_empty(pt[0],pt[1]):
+            if not self.is_empty(pt[0], pt[1]):
                 return False
 
             for m in self.creatures:
@@ -203,24 +192,24 @@ class Mine():
                     continue
                 elif Utils.distance(x, y, cx, cy) > max_dist:
                     continue
-                elif not self.is_visible_from(x,y,cx,cy):
+                elif not self.is_visible_from(x, y, cx, cy):
                     continue
                 else:
-                    cells.append((cx,cy))
+                    cells.append((cx, cy))
 
         return cells
 
-    def item(self,x,y):
+    def item(self, x, y):
         for m in self.creatures:
             if m.x == x and m.y == y:
                 return m
         return None
 
-    def material(self,x,y):
+    def material(self, x, y):
         try:
             return self.mine[y][x]
         except:
-            assert False, str(x)+','+str(y)
+            assert False, str(x) + ',' + str(y)
 
     def action(self):
         for level in self.mine:
@@ -240,7 +229,6 @@ class Mine():
                 print('Dwarves won!!')
             sys.exit()
 
-
     def print_current_level(self):
         current_state = []
         current_colors = []
@@ -258,15 +246,15 @@ class Mine():
 
         for y in range(self.height):
             for x in range(self.width):
-                if not self.dark or self.visibility[self.width*y+x]:
+                if not self.dark or self.visibility[self.width * y + x]:
                     stdscr.addstr(y, x, current_state[y][x], curses.color_pair(current_colors[y][x]))
                 else:
                     stdscr.addstr(y, x, ' ')
 
         stdscr.refresh()
 
-class Enchantment():
 
+class Enchantment:
     def __init__(self):
         self.creature = None
 
@@ -281,13 +269,12 @@ class Enchantment():
 
 
 class Tricked(Enchantment):
-
     def __init__(self):
         Enchantment.__init__(self)
         self.time = 100
 
     def place_on_creature(self, creature):
-        Enchantment.place_on_creature(self,creature)
+        Enchantment.place_on_creature(self, creature)
         creature.color = 135
         self.time = 1000
 
@@ -303,17 +290,14 @@ class Tricked(Enchantment):
 
 
 class SaboteurSpell(Tricked):
-
     def __init__(self):
         Tricked.__init__(self)
 
     def place_on_creature(self, creature):
-        Enchantment.place_on_creature(self,creature)
+        Enchantment.place_on_creature(self, creature)
 
 
-
-class Creature():
-
+class Creature:
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -331,7 +315,7 @@ class Creature():
 
     def has_enchantment(self, enchantment):
         for e in self.enchantments:
-            if isinstance(e,enchantment):
+            if isinstance(e, enchantment):
                 return True
         return False
 
@@ -348,7 +332,6 @@ class Creature():
 
 
 class Wizard(Creature):
-
     def __init__(self, x, y):
         Creature.__init__(self, x, y)
         self.color = 11
@@ -356,30 +339,29 @@ class Wizard(Creature):
 
     def place_in_mine(self, mine):
         Creature.place_in_mine(self, mine)
-        hole_size = random.randint(2,6)
-        for x in range(self.x-hole_size,self.x+hole_size+1):
+        hole_size = random.randint(2, 6)
+        for x in range(self.x - hole_size, self.x + hole_size + 1):
             if x < 0 or x >= self.mine.width:
                 continue
-            for y in range(self.y-hole_size,self.y+hole_size+1):
+            for y in range(self.y - hole_size, self.y + hole_size + 1):
                 if y < 0 or y >= self.mine.height:
                     continue
-                if Utils.distance(self.x,self.y,x,y) <= hole_size:
-                    self.mine.set_material(x,y,Space())
+                if Utils.distance(self.x, self.y, x, y) <= hole_size:
+                    self.mine.set_material(x, y, Space())
 
     def move(self):
         Creature.move(self)
         # look for dwarves
-        visible_cells=self.mine.get_visible_cells(self.x,self.y,self.view_distance)
+        visible_cells = self.mine.get_visible_cells(self.x, self.y, self.view_distance)
         for c in visible_cells:
-            item = self.mine.item(c[0],c[1])
-            if isinstance(item,Miner):
+            item = self.mine.item(c[0], c[1])
+            if isinstance(item, Miner):
                 # put a spell on him, if he doesn't have one already
                 if not item.has_enchantment(Tricked):
                     item.enchant(Tricked())
 
 
 class Miner(Creature):
-
     def __init__(self, x, y):
         Creature.__init__(self, x, y)
         self.x_dir = 0
@@ -387,11 +369,11 @@ class Miner(Creature):
         self.y_dir = 1
         self.yy_dir = 1
         self.frustration = 0
-        self.likes_to_go_vertical = random.randint(10,20)
-        self.likes_to_go_horizontal = random.randint(10,20)
+        self.likes_to_go_vertical = random.randint(10, 20)
+        self.likes_to_go_horizontal = random.randint(10, 20)
         self.view_distance = 5
 
-    def can_move(self,x ,y):
+    def can_move(self, x, y):
         for m in self.mine.creatures:
             if m == self:
                 continue
@@ -404,12 +386,12 @@ class Miner(Creature):
             self.yy_dir = 1
             self.y_dir = 1
             return
-        if self.y == self.mine.height-1:
+        if self.y == self.mine.height - 1:
             self.yy_dir = -1
             self.y_dir = -1
             return
 
-        if random.randint(1,1000) < self.frustration :
+        if random.randint(1, 1000) < self.frustration:
             self.yy_dir *= -1
             self.y_dir += self.yy_dir
             self.y_dir = max(min(self.y_dir, 1), -1)
@@ -429,12 +411,12 @@ class Miner(Creature):
             self.xx_dir = 1
             self.x_dir = 1
             return
-        if self.x == self.mine.width-1:
+        if self.x == self.mine.width - 1:
             self.xx_dir = -1
             self.x_dir = -1
             return
 
-        if random.randint(1,1000) < self.frustration:
+        if random.randint(1, 1000) < self.frustration:
             self.xx_dir *= -1
             self.x_dir += self.xx_dir
             self.x_dir = max(min(self.x_dir, 1), -1)
@@ -443,10 +425,10 @@ class Miner(Creature):
 
         if random.randint(1, 1000) == 1:
             self.x_dir += self.xx_dir
-            self.x_dir = max(min(self.x_dir,1),-1)
+            self.x_dir = max(min(self.x_dir, 1), -1)
 
         # 'general' direction trend is hard to change
-        if random.randint(1,10000) == 1:
+        if random.randint(1, 10000) == 1:
             self.xx_dir *= -1
 
     def decided_to_dig(self, x, y):
@@ -457,8 +439,9 @@ class Miner(Creature):
         toughness = self.mine.material(x, y).toughness
         if not toughness:
             return False
-#        assert toughness==1, toughness
-        return random.randint(1, toughness*(self.likes_to_go_horizontal*abs(self.x-x) + abs(self.y-y)*self.likes_to_go_vertical)) == 1
+        #        assert toughness==1, toughness
+        return random.randint(1, toughness * (
+            self.likes_to_go_horizontal * abs(self.x - x) + abs(self.y - y) * self.likes_to_go_vertical)) == 1
 
     def move(self):
         Creature.move(self)
@@ -469,7 +452,6 @@ class Miner(Creature):
         self.think_about_changing_vertical_direction()
         self.think_about_changing_horizontal_direction()
 
-
         changed_level = False
         if not changed_level and random.randint(1, 2) == 1:
             new_x += self.x_dir
@@ -477,8 +459,6 @@ class Miner(Creature):
 
         if not changed_level and random.randint(1, 2) == 1:
             new_y = new_y + self.y_dir
-            changed_level = True
-
 
         if new_x == self.x and new_y == self.y:
             return
@@ -487,54 +467,51 @@ class Miner(Creature):
             self.frustration += 1
             return
 
-        if not self.can_move(new_x,new_y):
+        if not self.can_move(new_x, new_y):
             self.frustration += 1
             return
 
         if self.mine.is_empty(new_x, new_y):
-            self.move_to(new_x,new_y)
+            self.move_to(new_x, new_y)
             self.frustration = 0
 
         else:
             # reluctant to dig
-            if self.decided_to_dig(new_x,new_y):
+            if self.decided_to_dig(new_x, new_y):
                 self.move_to(new_x, new_y)
                 self.mine.mine[self.y][self.x] = Space()
                 self.frustration = 0
             else:
                 self.frustration += 1
 
-    def moved_from(self,x,y):
+    def moved_from(self, x, y):
         if self.has_enchantment(Tricked):
-            if random.randint(1,5) == 1:
-                self.mine.set_material(x,y,Rock())
+            if random.randint(1, 5) == 1:
+                self.mine.set_material(x, y, Rock())
 
-    def move_to(self,x,y):
+    def move_to(self, x, y):
         old_x = self.x
         old_y = self.y
-        self.x=x
-        self.y=y
+        self.x = x
+        self.y = y
 
-        visible_cells=self.mine.get_visible_cells(x,y,self.view_distance)
+        visible_cells = self.mine.get_visible_cells(x, y, self.view_distance)
         for c in visible_cells:
-            self.mine.set_visibility(c[0],c[1],True)
+            self.mine.set_visibility(c[0], c[1], True)
 
-        self.moved_from(old_x,old_y)
-
+        self.moved_from(old_x, old_y)
 
 
 class Saboteur(Miner):
-
     def __init__(self, x, y):
-        Miner.__init__(self,x,y)
+        Miner.__init__(self, x, y)
         self.char = '☹'
         self.color = 2
         self.original_color = self.color
         self.enchant(SaboteurSpell())
 
 
-class Treasure():
-
+class Treasure:
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -543,20 +520,20 @@ class Treasure():
 
 
 m = Mine()
-for i in range(random.randint(1,200)):
-    miner = Miner(random.randint(0,m.width-1),0)
+for i in range(random.randint(1, 200)):
+    miner = Miner(random.randint(0, m.width - 1), 0)
     m.add_creature(miner)
 
-for i in range(random.randint(1,3)):
-    saboteur = Saboteur(random.randint(0,m.width-1),int(m.height/2))
+for i in range(random.randint(1, 3)):
+    saboteur = Saboteur(random.randint(0, m.width - 1), int(m.height / 2))
     m.add_creature(saboteur)
 
-for i in range(random.randint(1,5)):
-    wizard = Wizard(random.randint(0,m.width-1),random.randint(int(m.height/2), m.height-1))
+for i in range(random.randint(1, 5)):
+    wizard = Wizard(random.randint(0, m.width - 1), random.randint(int(m.height / 2), m.height - 1))
     m.add_creature(wizard)
 
-for i in range(random.randint(1,10)):
-    treasure = Treasure(random.randint(0,m.width-1),random.randint(10,m.height-1))
+for i in range(random.randint(1, 10)):
+    treasure = Treasure(random.randint(0, m.width - 1), random.randint(10, m.height - 1))
     m.add_treasure(treasure)
 
 if False:
@@ -584,8 +561,5 @@ elif True:
     for i in range(0, curses.COLORS):
         curses.init_pair(i + 1, i, -1)
 
-
     while True:
         m.action()
-
-
