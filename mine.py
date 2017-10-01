@@ -122,13 +122,13 @@ class Mine:
         self.build_mine()
         self.creatures = []
         self.items = []
-        self.dark = False
+        self.dark = True
 
     def build_mine(self):
         for l in range(self.height):
             self.mine.append([None] * self.width)
 
-        self.visibility = [False] * self.width * self.height
+        self.visibility = [False] * (self.width * self.height)
 
         for y in range(self.height):
             for x in range(self.width):
