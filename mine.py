@@ -68,6 +68,9 @@ class Lava(Material):
             for x in x_neighbors:
                 if x == self.x and y == self.y:
                     continue
+                if x != self.x and y != self.y:
+                    # no diagonals
+                    continue
                 if self.temperature < 100:
                     break
 
