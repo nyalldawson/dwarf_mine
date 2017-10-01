@@ -162,6 +162,7 @@ class Mine:
     def add_item(self, item):
         self.items.append(item)
         item.add_to_mine(self)
+        self.set_material(item.x, item.y, Space())
 
     def set_visibility(self, x, y, visibility):
         self.visibility[y * self.width + x] = visibility
