@@ -592,7 +592,7 @@ class Item:
         self.color = 1
         self.mine = None
 
-    def add_to_mine(self,mine):
+    def add_to_mine(self, mine):
         self.mine = mine
 
     def is_attractive_to(self,creature):
@@ -601,13 +601,15 @@ class Item:
 
 class Treasure(Item):
     def __init__(self, x, y):
-        Item.__init__(self,x,y)
+        Item.__init__(self, x, y)
         self.char = '☼'
         self.color = 12
 
-    def add_to_mine(self,mine):
-        Item.add_to_mine(self,mine)
+    def add_to_mine(self, mine):
+        Item.add_to_mine(self, mine)
         mine.set_visibility(self.x, self.y, True)
+        hole_size = random.randint(2, 4)
+        mine.create_cave(self.x, self.y, hole_size)
 
     def is_attractive_to(self,creature):
         if isinstance(creature,Miner):
@@ -621,7 +623,13 @@ class Map(Item):
         self.char = 'M'
         self.color = 181
 
-    def is_attractive_to(self,creature):
+    def add_to_mine(self, mine):
+        Item.add_to_mine(self, mine)
+        hole_size = random.randint(4, 8)
+        mine.create_cave(self.x, self.y, hole_size)
+        mine.set_visibility(self.x, self.y, True)
+
+    def is_attractive_to(self, creature):
         if isinstance(creature, Miner):
             return True
 
@@ -650,9 +658,8 @@ for i in range(random.randint(1, 10)):
     m.add_item(treasure)
 
 for i in range(random.randint(1, 10)):
-    map = Map(random.randint(0, m.width - 1), random.randint(5, m.height - 1))
-    m.add_item(map)
-
+    map_item = Map(random.randint(0, m.width - 1), random.randint(5, m.height - 1))
+    m.add_item(map_item)
 
 if False:
     stdscr = curses.initscr()
