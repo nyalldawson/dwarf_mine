@@ -116,7 +116,9 @@ class Mine:
     def __init__(self, screen, width, height):
         self.screen = screen
         self.width = width
-        self.height = height
+        self.height = height - 1
+        self.feedback_line = height - 1
+        self.feedback_timer = 0
         self.mine = []
         self.visibility = []
         self.colors = []
@@ -124,6 +126,16 @@ class Mine:
         self.creatures = []
         self.items = []
         self.dark = True
+
+    def push_feedback(self, line):
+        self.screen.addstr(self.feedback_line, 0, line + (' ' *(self.width-len(line))))
+        self.feedback_timer = 40
+
+    def clear_feedback(self):
+        self.screen.addstr(self.feedback_line, 0, ' ' * self.width)
+
+    def push_message(self, message):
+        MessageBox(self.screen, message)
 
     def build_mine(self):
         for l in range(self.height):
@@ -247,11 +259,11 @@ class Mine:
         self.print_current_level()
 
         if len([i for i in self.items if isinstance(i, Treasure)]) == 0:
-            MessageBox(self.screen, 'Dwarves won!')
+            self.push_message('Dwarves won!')
             sys.exit()
 
         if len([c for c in self.creatures if isinstance(c, Miner) and not isinstance(c, Saboteur)]) == 0:
-            MessageBox(self.screen, 'All dwarves died\n\nYou lose!')
+            self.push_message('All dwarves died\n\nYou lose!')
             sys.exit()
 
 
@@ -277,6 +289,9 @@ class Mine:
                 else:
                     self.screen.addstr(y, x, ' ')
 
+        self.feedback_timer -= 1
+        if self.feedback_timer == 0:
+            self.clear_feedback()
         self.screen.refresh()
 
 
@@ -514,6 +529,7 @@ class Creature:
         self.view_distance = 0
         self.actions = []
         self.items = []
+        self.type = 'Creature'
 
     def place_in_mine(self, mine):
         self.mine = mine
@@ -528,9 +544,12 @@ class Creature:
 
     def add_item(self, item):
         self.items.append(item)
+        self.mine.push_feedback('{} found a {}!'.format(self.type, item.type))
+        item.found_by(self)
 
     def die(self):
         self.mine.remove_creature(self)
+        self.mine.push_feedback('A {} died!'.format(self.type))
 
     def has_enchantment(self, enchantment):
         for e in self.enchantments:
@@ -569,6 +588,7 @@ class Wizard(Creature):
         Creature.__init__(self, x, y)
         self.color = 11
         self.view_distance = 5
+        self.type = 'Wizard'
 
     def place_in_mine(self, mine):
         Creature.place_in_mine(self, mine)
@@ -581,6 +601,7 @@ class Wizard(Creature):
             # put a spell on him, if he doesn't have one already
             if not creature.has_enchantment(Tricked):
                 creature.enchant(Tricked())
+                self.mine.push_feedback('Wizard cast a spell on a {}!'.format(creature.type))
 
 
 class Miner(Creature):
@@ -590,6 +611,7 @@ class Miner(Creature):
         self.likes_to_go_horizontal = random.randint(10, 20)
         self.view_distance = 5
         self.push_action(ExploreAction())
+        self.type = 'Miner'
 
     def place_in_mine(self, mine):
         Creature.place_in_mine(self, mine)
@@ -654,6 +676,7 @@ class Saboteur(Miner):
         self.color = 2
         self.original_color = self.color
         self.enchant(SaboteurSpell())
+        self.type = 'Saboteur'
 
 
 class Item:
@@ -663,6 +686,7 @@ class Item:
         self.char = 'X'
         self.color = 1
         self.mine = None
+        self.type = 'thing'
 
     def add_to_mine(self, mine):
         self.mine = mine
@@ -670,12 +694,17 @@ class Item:
     def is_attractive_to(self, creature):
         return False
 
+    def found_by(self, creature):
+        pass
+
 
 class Treasure(Item):
     def __init__(self, x, y):
         Item.__init__(self, x, y)
         self.char = '☼'
         self.color = 12
+        treasures = ['crown','gold nugget','diamond','shiny ring','gold ring','silver ring','treasure chest','gold coin']
+        self.type = treasures[random.randint(0,len(treasures)-1)]
 
     def add_to_mine(self, mine):
         Item.add_to_mine(self, mine)
@@ -689,12 +718,16 @@ class Treasure(Item):
 
         return False
 
+    def found_by(self, creature):
+        creature.mine.push_message('{} found a {}!'.format(creature.type,self.type))
+
 
 class Map(Item):
     def __init__(self, x, y):
         Item.__init__(self, x, y)
         self.char = 'M'
         self.color = 181
+        self.type = 'map'
 
     def add_to_mine(self, mine):
         Item.add_to_mine(self, mine)
