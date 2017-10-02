@@ -113,7 +113,8 @@ class Utils:
 
 
 class Mine:
-    def __init__(self, width, height):
+    def __init__(self, screen, width, height):
+        self.screen = screen
         self.width = width
         self.height = height
         self.mine = []
@@ -268,11 +269,11 @@ class Mine:
         for y in range(self.height):
             for x in range(self.width):
                 if not self.dark or self.visibility[self.width * y + x]:
-                    stdscr.addstr(y, x, current_state[y][x], curses.color_pair(current_colors[y][x]))
+                    self.screen.addstr(y, x, current_state[y][x], curses.color_pair(current_colors[y][x]))
                 else:
-                    stdscr.addstr(y, x, ' ')
+                    self.screen.addstr(y, x, ' ')
 
-        stdscr.refresh()
+        self.screen.refresh()
 
 
 class Enchantment:
@@ -703,10 +704,7 @@ class Map(Item):
 
         return False
 
-stdscr = None
 def main(screen):
-    global stdscr
-    stdscr = screen
     if False:
         curses.start_color()
         curses.use_default_colors()
@@ -720,10 +718,10 @@ def main(screen):
             if x > 180:
                 y += 1
                 x = 0
-            stdscr.addstr(y, x, str(i), curses.color_pair(i))
+            screen.addstr(y, x, str(i), curses.color_pair(i))
 
-        stdscr.refresh()
-        char = stdscr.getch()
+        screen.refresh()
+        char = screen.getch()
     elif True:
         curses.start_color()
         curses.use_default_colors()
@@ -732,9 +730,9 @@ def main(screen):
 
         curses.curs_set(0)
 
-        height, width = stdscr.getmaxyx()
+        height, width = screen.getmaxyx()
 
-        m = Mine(width-1, height-1)
+        m = Mine(screen, width-1, height-1)
         for i in range(random.randint(1, 200)):
             miner = Miner(random.randint(0, m.width - 1), 0)
             m.add_creature(miner)
