@@ -840,7 +840,7 @@ class MessageBox:
         self.draw_message(left, top, message_width, lines)
 
         self.screen.refresh()
-        char = screen.getch()
+        screen.getch()
 
     def draw_box(self, left, top, width, height):
         self.screen.addstr(top - 1, left - 1, '+' + ('-' * (width + 2)) + '+', curses.color_pair(215))
@@ -875,7 +875,8 @@ def main(screen):
             screen.addstr(y, x, str(i), curses.color_pair(i))
 
         screen.refresh()
-        char = screen.getch()
+        screen.getch()
+
     elif True:
         for i in range(0, curses.COLORS):
             curses.init_pair(i + 1, i, 16)
