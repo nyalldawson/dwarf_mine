@@ -303,7 +303,7 @@ class Enchantment:
         self.creature = creature
 
     def remove_from_creature(self, creature):
-        pass
+        creature.remove_enchantment(self)
 
     def action(self):
         pass
@@ -325,10 +325,6 @@ class Tricked(Enchantment):
         if self.time < 0:
             self.remove_from_creature(self.creature)
 
-    def remove_from_creature(self, creature):
-        creature.color = creature.original_color
-        creature.remove_enchantment(self)
-
 
 class SaboteurSpell(Tricked):
     def __init__(self):
@@ -337,6 +333,31 @@ class SaboteurSpell(Tricked):
 
     def place_on_creature(self, creature):
         Enchantment.place_on_creature(self, creature)
+
+
+class DeterminationSpell(Enchantment):
+    def __init__(self):
+        Enchantment.__init__(self)
+        self.time = 0
+
+    def place_on_creature(self, creature):
+        Enchantment.place_on_creature(self,creature)
+        if not creature.has_trait(Determined):
+            Enchantment.place_on_creature(self, creature)
+            creature.add_trait(Determined())
+            creature.color = 230
+            self.time = 100
+
+    def action(self):
+        Enchantment.action(self)
+        self.time -= 1
+        if self.time < 0:
+            self.remove_from_creature(self.creature)
+
+    def remove_from_creature(self, creature):
+        Enchantment.remove_from_creature(self,creature)
+        creature.remove_trait(Determined())
+
 
 
 class Action:
@@ -529,6 +550,7 @@ class Creature:
         self.view_distance = 0
         self.actions = []
         self.items = []
+        self.traits = []
         self.type = 'Creature'
 
     def place_in_mine(self, mine):
@@ -541,6 +563,21 @@ class Creature:
 
     def remove_action(self, action):
         self.actions.remove(action)
+
+    def add_trait(self, trait):
+        self.traits.append(trait)
+
+    def has_trait(self, trait):
+        for t in self.traits:
+            if isinstance(t, trait):
+                return True
+        return False
+
+    def remove_trait(self, trait):
+        try:
+            self.traits.remove(trait)
+        except: # ValueError:
+            pass
 
     def add_item(self, item):
         self.items.append(item)
@@ -563,6 +600,8 @@ class Creature:
 
     def remove_enchantment(self, enchantment):
         self.enchantments.remove(enchantment)
+        if len(self.enchantments) == 0:
+            self.color=self.original_color
 
     def move(self):
         self.look()
@@ -626,6 +665,9 @@ class Miner(Creature):
         return True
 
     def decided_to_dig(self, x, y):
+        if self.has_trait(Determined) and random.randint(1,2) == 1:
+            return True
+
         if self.has_enchantment(Tricked):
             # he's motivated!
             return random.randint(1, 10) == 1
@@ -666,7 +708,14 @@ class Miner(Creature):
         item = self.mine.get_item(x, y)
         if item is not None:
             if item.is_attractive_to(self):
-                self.push_action(GoToAction(x, y))
+                already_going_there = False
+                for a in self.actions:
+                    if isinstance(a,GoToAction):
+                        if a.x == x and a.y == y:
+                            already_going_there = True
+                            break
+                if not already_going_there:
+                    self.push_action(GoToAction(x, y))
 
 
 class Saboteur(Miner):
@@ -677,6 +726,19 @@ class Saboteur(Miner):
         self.original_color = self.color
         self.enchant(SaboteurSpell())
         self.type = 'Saboteur'
+
+
+class Trait:
+
+    def __init__(self):
+        self.type = ''
+
+
+class Determined:
+    def __init__(self):
+        Trait.__init__(self)
+        self.type = 'determined'
+
 
 
 class Item:
@@ -703,8 +765,15 @@ class Treasure(Item):
         Item.__init__(self, x, y)
         self.char = '☼'
         self.color = 12
-        treasures = ['crown','gold nugget','diamond','shiny ring','gold ring','silver ring','treasure chest','gold coin']
-        self.type = treasures[random.randint(0,len(treasures)-1)]
+        if random.randint(1,5) == 1:
+            treasures = ['magic ring']
+            self.type = treasures[random.randint(0, len(treasures) - 1)]
+            self.spell = DeterminationSpell()
+        else:
+            treasures = ['crown','gold nugget','diamond','shiny ring','gold ring','silver ring','treasure chest','gold coin']
+            self.type = treasures[random.randint(0,len(treasures)-1)]
+            self.spell = None
+
 
     def add_to_mine(self, mine):
         Item.add_to_mine(self, mine)
@@ -719,7 +788,10 @@ class Treasure(Item):
         return False
 
     def found_by(self, creature):
+        if self.spell is not None:
+            creature.enchant(self.spell)
         creature.mine.push_message('{} found a {}!'.format(creature.type,self.type))
+
 
 
 class Map(Item):
@@ -782,14 +854,6 @@ def main(screen):
     curses.curs_set(0)
 
     if False:
-        for i in range(0, curses.COLORS):
-            curses.init_pair(i + 1, i, 16)
-
-        box = MessageBox(screen,'My test message\nAnother line\nYou died!')
-
-        char = screen.getch()
-
-    elif False:
 
         for i in range(0, curses.COLORS):
             curses.init_pair(i + 1, 0, i)
