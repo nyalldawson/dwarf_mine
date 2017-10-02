@@ -4,6 +4,7 @@ import sys
 import math
 import inspect
 
+
 class Material:
     def __init__(self):
         self.char = None
@@ -128,7 +129,7 @@ class Mine:
         self.dark = True
 
     def push_feedback(self, line):
-        self.screen.addstr(self.feedback_line, 0, line + (' ' *(self.width-len(line))))
+        self.screen.addstr(self.feedback_line, 0, line + (' ' * (self.width - len(line))))
         self.feedback_timer = 40
 
     def clear_feedback(self):
@@ -266,7 +267,6 @@ class Mine:
             self.push_message('All dwarves died\n\nYou lose!')
             sys.exit()
 
-
     def print_current_level(self):
         current_state = []
         current_colors = []
@@ -342,7 +342,7 @@ class DeterminationSpell(Enchantment):
         self.trait = None
 
     def place_on_creature(self, creature):
-        Enchantment.place_on_creature(self,creature)
+        Enchantment.place_on_creature(self, creature)
         if not creature.has_trait(Determined):
             Enchantment.place_on_creature(self, creature)
             self.trait = Determined()
@@ -357,9 +357,8 @@ class DeterminationSpell(Enchantment):
             self.remove_from_creature(self.creature)
 
     def remove_from_creature(self, creature):
-        Enchantment.remove_from_creature(self,creature)
+        Enchantment.remove_from_creature(self, creature)
         creature.remove_trait(self.trait)
-
 
 
 class Action:
@@ -578,7 +577,7 @@ class Creature:
     def remove_trait(self, trait):
         try:
             self.traits.remove(trait)
-        except: # ValueError:
+        except:  # ValueError:
             pass
 
     def add_item(self, item):
@@ -603,7 +602,7 @@ class Creature:
     def remove_enchantment(self, enchantment):
         self.enchantments.remove(enchantment)
         if len(self.enchantments) == 0:
-            self.color=self.original_color
+            self.color = self.original_color
 
     def move(self):
         self.look()
@@ -656,7 +655,7 @@ class Miner(Creature):
         self.define_character()
 
     def define_character(self):
-        if random.randint(1,30) == 1:
+        if random.randint(1, 30) == 1:
             self.add_trait(Lazy())
 
     def place_in_mine(self, mine):
@@ -672,7 +671,7 @@ class Miner(Creature):
         return True
 
     def decided_to_dig(self, x, y):
-        if self.has_trait(Determined) and random.randint(1,2) == 1:
+        if self.has_trait(Determined) and random.randint(1, 2) == 1:
             return True
 
         if self.has_enchantment(Tricked):
@@ -717,7 +716,7 @@ class Miner(Creature):
             if item.is_attractive_to(self):
                 already_going_there = False
                 for a in self.actions:
-                    if isinstance(a,GoToAction):
+                    if isinstance(a, GoToAction):
                         if a.x == x and a.y == y:
                             already_going_there = True
                             break
@@ -736,7 +735,6 @@ class Saboteur(Miner):
 
 
 class Trait:
-
     def __init__(self):
         self.type = ''
 
@@ -777,15 +775,15 @@ class Treasure(Item):
         Item.__init__(self, x, y)
         self.char = '☼'
         self.color = 12
-        if random.randint(1,5) == 1:
+        if random.randint(1, 5) == 1:
             treasures = ['magic ring']
             self.type = treasures[random.randint(0, len(treasures) - 1)]
             self.spell = DeterminationSpell()
         else:
-            treasures = ['crown','gold nugget','diamond','shiny ring','gold ring','silver ring','treasure chest','gold coin']
-            self.type = treasures[random.randint(0,len(treasures)-1)]
+            treasures = ['crown', 'gold nugget', 'diamond', 'shiny ring', 'gold ring', 'silver ring', 'treasure chest',
+                         'gold coin']
+            self.type = treasures[random.randint(0, len(treasures) - 1)]
             self.spell = None
-
 
     def add_to_mine(self, mine):
         Item.add_to_mine(self, mine)
@@ -802,8 +800,7 @@ class Treasure(Item):
     def found_by(self, creature):
         if self.spell is not None:
             creature.enchant(self.spell)
-        creature.mine.push_message('{} found a {}!'.format(creature.type,self.type))
-
+        creature.mine.push_message('{} found a {}!'.format(creature.type, self.type))
 
 
 class Map(Item):
@@ -827,7 +824,6 @@ class Map(Item):
 
 
 class MessageBox:
-
     def __init__(self, screen, message):
         self.screen = screen
         lines = message.split('\n')
@@ -837,26 +833,25 @@ class MessageBox:
 
         screen_height, screen_width = screen.getmaxyx()
 
-        left = math.floor( ( screen_width - message_width ) / 2 )
-        top = math.floor( ( screen_height - message_height ) / 2 )
-        self.draw_box(left,top,message_width,message_height)
+        left = math.floor((screen_width - message_width) / 2)
+        top = math.floor((screen_height - message_height) / 2)
+        self.draw_box(left, top, message_width, message_height)
 
-        self.draw_message(left,top,message_width,lines)
+        self.draw_message(left, top, message_width, lines)
 
         self.screen.refresh()
         char = screen.getch()
 
     def draw_box(self, left, top, width, height):
-        self.screen.addstr(top-1, left-1, '+' + ('-'*(width+2)) + '+', curses.color_pair(215))
-        for y in range(top, top+height+2):
-            self.screen.addstr(y, left-1, '|' + (' ' * (width+2)) + '|', curses.color_pair(215))
-        self.screen.addstr(top+height+2, left-1, '+' + ('-'*(width+2)) + '+', curses.color_pair(215))
+        self.screen.addstr(top - 1, left - 1, '+' + ('-' * (width + 2)) + '+', curses.color_pair(215))
+        for y in range(top, top + height + 2):
+            self.screen.addstr(y, left - 1, '|' + (' ' * (width + 2)) + '|', curses.color_pair(215))
+        self.screen.addstr(top + height + 2, left - 1, '+' + ('-' * (width + 2)) + '+', curses.color_pair(215))
 
-
-    def draw_message(self,left,top,width,lines):
+    def draw_message(self, left, top, width, lines):
         for y, l in enumerate(lines):
             line_length = len(l)
-            line_offset = math.floor(( width - line_length ) / 2)
+            line_offset = math.floor((width - line_length) / 2)
             self.screen.addstr(top + 1 + y, left + 1 + line_offset, l, curses.color_pair(221))
 
 
@@ -887,7 +882,7 @@ def main(screen):
 
         height, width = screen.getmaxyx()
 
-        m = Mine(screen, width-1, height-1)
+        m = Mine(screen, width - 1, height - 1)
         for i in range(random.randint(1, 200)):
             miner = Miner(random.randint(0, m.width - 1), 0)
             m.add_creature(miner)
@@ -914,6 +909,7 @@ def main(screen):
 
         while True:
             m.action()
+
 
 if __name__ == '__main__':
     curses.wrapper(main)
