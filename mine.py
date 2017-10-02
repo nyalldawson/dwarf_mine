@@ -247,9 +247,13 @@ class Mine:
         self.print_current_level()
 
         if len([i for i in self.items if isinstance(i, Treasure)]) == 0:
-            for i in range(2):
-                print('Dwarves won!!')
+            MessageBox(self.screen, 'Dwarves won!')
             sys.exit()
+
+        if len([c for c in self.creatures if isinstance(c, Miner) and not isinstance(c, Saboteur)]) == 0:
+            MessageBox(self.screen, 'All dwarves died\n\nYou lose!')
+            sys.exit()
+
 
     def print_current_level(self):
         current_state = []
@@ -704,10 +708,56 @@ class Map(Item):
 
         return False
 
+
+class MessageBox:
+
+    def __init__(self, screen, message):
+        self.screen = screen
+        lines = message.split('\n')
+
+        message_width = max([len(l) for l in lines])
+        message_height = len(lines)
+
+        screen_height, screen_width = screen.getmaxyx()
+
+        left = math.floor( ( screen_width - message_width ) / 2 )
+        top = math.floor( ( screen_height - message_height ) / 2 )
+        self.draw_box(left,top,message_width,message_height)
+
+        self.draw_message(left,top,message_width,lines)
+
+        self.screen.refresh()
+        char = screen.getch()
+
+    def draw_box(self, left, top, width, height):
+        self.screen.addstr(top-1, left-1, '+' + ('-'*(width+2)) + '+', curses.color_pair(215))
+        for y in range(top, top+height+2):
+            self.screen.addstr(y, left-1, '|' + (' ' * (width+2)) + '|', curses.color_pair(215))
+        self.screen.addstr(top+height+2, left-1, '+' + ('-'*(width+2)) + '+', curses.color_pair(215))
+
+
+    def draw_message(self,left,top,width,lines):
+        for y, l in enumerate(lines):
+            line_length = len(l)
+            line_offset = math.floor(( width - line_length ) / 2)
+            self.screen.addstr(top + 1 + y, left + 1 + line_offset, l, curses.color_pair(221))
+
+
 def main(screen):
+    curses.start_color()
+    curses.use_default_colors()
+    curses.curs_set(0)
+
     if False:
-        curses.start_color()
-        curses.use_default_colors()
+        for i in range(0, curses.COLORS):
+            curses.init_pair(i + 1, i, 16)
+
+        box = MessageBox(screen,'My test message\nAnother line\nYou died!')
+
+        char = screen.getch()
+
+    elif False:
+
         for i in range(0, curses.COLORS):
             curses.init_pair(i + 1, 0, i)
 
@@ -723,12 +773,8 @@ def main(screen):
         screen.refresh()
         char = screen.getch()
     elif True:
-        curses.start_color()
-        curses.use_default_colors()
         for i in range(0, curses.COLORS):
             curses.init_pair(i + 1, i, 16)
-
-        curses.curs_set(0)
 
         height, width = screen.getmaxyx()
 
