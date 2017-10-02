@@ -3,7 +3,7 @@ import sys
 import curses
 
 from message_box import MessageBox
-from materials import Lava, Dirt, Space
+from materials import Lava, Dirt, Space, Water
 from utils import Utils
 from items import Treasure
 from creatures import Miner, Saboteur
@@ -35,14 +35,8 @@ class Mine:
         MessageBox(self.screen, message)
 
     def build_mine(self):
-        for l in range(self.height):
-            self.mine.append([None] * self.width)
-
+        self.mine = [Dirt()] * (self.width*self.height)
         self.visibility = [False] * (self.width * self.height)
-
-        for y in range(self.height):
-            for x in range(self.width):
-                self.set_material(x, y, Dirt())
 
         for l in range(random.randint(1, 5)):
             lava_size = random.randint(5, 20)
@@ -55,8 +49,19 @@ class Mine:
                 for i in range(lava_start, lava_start + lava_size):
                     self.set_material(i, y, Lava())
 
+        for l in range(random.randint(1, 5)):
+            water_size = random.randint(5, 20)
+            water_start = random.randint(1, self.width - water_size - 1)
+
+            water_y_start = random.randint(5, self.height - 1)
+            water_y_end = min(self.height - 1, water_y_start + random.randint(1, 10))
+
+            for y in range(water_y_start, water_y_end):
+                for i in range(water_start, water_start + water_size):
+                    self.set_material(i, y, Water())
+
     def set_material(self, x, y, material):
-        self.mine[y][x] = material
+        self.mine[y * self.width + x] = material
         material.x = x
         material.y = y
         material.mine = self
@@ -78,7 +83,7 @@ class Mine:
         self.visibility[y * self.width + x] = visibility
 
     def is_empty(self, x, y):
-        return isinstance(self.mine[y][x], Space)
+        return isinstance(self.mine[y * self.width + x], Space)
 
     def is_valid_location(self, x, y):
         return 0 <= x < self.width and 0 <= y < self.height
@@ -127,7 +132,7 @@ class Mine:
 
     def material(self, x, y):
         try:
-            return self.mine[y][x]
+            return self.mine[y * self.width + x]
         except:
             assert False, str(x) + ',' + str(y)
 
@@ -142,9 +147,8 @@ class Mine:
                     self.set_material(x, y, Space())
 
     def action(self):
-        for level in self.mine:
-            for cell in level:
-                cell.action()
+        for cell in self.mine:
+            cell.action()
 
         for m in self.creatures:
             m.move()
@@ -164,24 +168,21 @@ class Mine:
             sys.exit()
 
     def print_current_level(self):
-        current_state = []
-        current_colors = []
-        for l in self.mine:
-            current_state.append([s.char for s in l])
-            current_colors.append([s.color for s in l])
+        current_state = [s.get_char() for s in self.mine]
+        current_colors = [s.color for s in self.mine]
 
         for m in self.creatures:
-            current_state[m.y][m.x] = m.char
-            current_colors[m.y][m.x] = m.color
+            current_state[m.y * self.width + m.x] = m.char
+            current_colors[m.y * self.width + m.x] = m.color
 
         for i in self.items:
-            current_state[i.y][i.x] = i.char
-            current_colors[i.y][i.x] = i.color
+            current_state[i.y * self.width + i.x] = i.char
+            current_colors[i.y * self.width + i.x] = i.color
 
         for y in range(self.height):
             for x in range(self.width):
                 if not self.dark or self.visibility[self.width * y + x]:
-                    self.screen.addstr(y, x, current_state[y][x], curses.color_pair(current_colors[y][x]))
+                    self.screen.addstr(y, x, current_state[y * self.width + x], curses.color_pair(current_colors[y * self.width + x]))
                 else:
                     self.screen.addstr(y, x, '█', curses.color_pair(235))
 
