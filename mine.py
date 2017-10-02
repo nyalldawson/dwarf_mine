@@ -183,7 +183,7 @@ class Mine:
                 if not self.dark or self.visibility[self.width * y + x]:
                     self.screen.addstr(y, x, current_state[y][x], curses.color_pair(current_colors[y][x]))
                 else:
-                    self.screen.addstr(y, x, ' ')
+                    self.screen.addstr(y, x, '█', curses.color_pair(235))
 
         self.feedback_timer -= 1
         if self.feedback_timer == 0:
