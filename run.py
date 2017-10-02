@@ -1,5 +1,7 @@
 import curses
+import argparse
 from generator import MineGenerator
+from utils import show_colors
 
 
 def main(screen):
@@ -7,35 +9,23 @@ def main(screen):
     curses.use_default_colors()
     curses.curs_set(0)
 
-    if False:
+    for i in range(0, curses.COLORS):
+        curses.init_pair(i + 1, i, 16)
 
-        for i in range(0, curses.COLORS):
-            curses.init_pair(i + 1, 0, i)
+    height, width = screen.getmaxyx()
 
-        x = 0
-        y = 0
-        for i in range(1000):
-            x += 4
-            if x > 180:
-                y += 1
-                x = 0
-            screen.addstr(y, x, str(i), curses.color_pair(i))
+    g = MineGenerator(width - 1, height - 1)
+    m = g.build_mine(screen)
 
-        screen.refresh()
-        screen.getch()
-
-    elif True:
-        for i in range(0, curses.COLORS):
-            curses.init_pair(i + 1, i, 16)
-
-        height, width = screen.getmaxyx()
-
-        g = MineGenerator(width - 1, height - 1)
-        m = g.build_mine(screen)
-
-        while True:
-            m.action()
+    while True:
+        m.action()
 
 
 if __name__ == '__main__':
-    curses.wrapper(main)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--show-colors", help="shows a grid of available colors", action="store_true")
+    args = parser.parse_args()
+    if args.show_colors:
+        curses.wrapper(show_colors)
+    else:
+        curses.wrapper(main)
