@@ -2,7 +2,7 @@ import random
 import curses
 import sys
 import math
-
+import inspect
 
 class Material:
     def __init__(self):
@@ -339,14 +339,16 @@ class DeterminationSpell(Enchantment):
     def __init__(self):
         Enchantment.__init__(self)
         self.time = 0
+        self.trait = None
 
     def place_on_creature(self, creature):
         Enchantment.place_on_creature(self,creature)
         if not creature.has_trait(Determined):
             Enchantment.place_on_creature(self, creature)
-            creature.add_trait(Determined())
+            self.trait = Determined()
+            creature.add_trait(self.trait)
             creature.color = 230
-            self.time = 100
+            self.time = 300
 
     def action(self):
         Enchantment.action(self)
@@ -356,7 +358,7 @@ class DeterminationSpell(Enchantment):
 
     def remove_from_creature(self, creature):
         Enchantment.remove_from_creature(self,creature)
-        creature.remove_trait(Determined())
+        creature.remove_trait(self.trait)
 
 
 
