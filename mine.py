@@ -653,6 +653,11 @@ class Miner(Creature):
         self.view_distance = 5
         self.push_action(ExploreAction())
         self.type = 'Miner'
+        self.define_character()
+
+    def define_character(self):
+        if random.randint(1,30) == 1:
+            self.add_trait(Lazy())
 
     def place_in_mine(self, mine):
         Creature.place_in_mine(self, mine)
@@ -687,7 +692,7 @@ class Miner(Creature):
                 self.mine.set_material(x, y, Rock())
 
     def move(self):
-        if random.randint(1, 1000) == 1:
+        if random.randint(1, 1000) <= (10 if self.has_trait(Lazy) else 1):
             self.push_action(SleepAction())
 
         Creature.move(self)
@@ -736,11 +741,16 @@ class Trait:
         self.type = ''
 
 
-class Determined:
+class Determined(Trait):
     def __init__(self):
         Trait.__init__(self)
         self.type = 'determined'
 
+
+class Lazy(Trait):
+    def __init__(self):
+        Trait.__init__(self)
+        self.type = 'lazy'
 
 
 class Item:
