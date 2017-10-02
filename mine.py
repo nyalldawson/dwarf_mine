@@ -703,60 +703,63 @@ class Map(Item):
 
         return False
 
+stdscr = None
+def main(screen):
+    global stdscr
+    stdscr = screen
+    if False:
+        curses.start_color()
+        curses.use_default_colors()
+        for i in range(0, curses.COLORS):
+            curses.init_pair(i + 1, i, -1)
 
+        x = 0
+        y = 0
+        for i in range(1000):
+            x += 4
+            if x > 180:
+                y += 1
+                x = 0
+            stdscr.addstr(y, x, str(i), curses.color_pair(i))
 
-if False:
-    stdscr = curses.initscr()
-    curses.start_color()
-    curses.use_default_colors()
-    for i in range(0, curses.COLORS):
-        curses.init_pair(i + 1, i, -1)
+        stdscr.refresh()
+    elif True:
+        curses.start_color()
+        curses.use_default_colors()
+        for i in range(0, curses.COLORS):
+            curses.init_pair(i + 1, i, -1)
 
-    x = 0
-    y = 0
-    for i in range(1000):
-        x += 4
-        if x > 180:
-            y += 1
-            x = 0
-        stdscr.addstr(y, x, str(i), curses.color_pair(i))
+        curses.curs_set(0)
 
-    stdscr.refresh()
-elif True:
+        height, width = stdscr.getmaxyx()
 
-    stdscr = curses.initscr()
-    height, width = stdscr.getmaxyx()
+        m = Mine(width-1, height-1)
+        for i in range(random.randint(1, 200)):
+            miner = Miner(random.randint(0, m.width - 1), 0)
+            m.add_creature(miner)
 
-    m = Mine(width-1, height-1)
-    for i in range(random.randint(1, 200)):
-        miner = Miner(random.randint(0, m.width - 1), 0)
-        m.add_creature(miner)
+        for i in range(random.randint(4, 10)):
+            hole_size = random.randint(4, 8)
+            m.create_cave(random.randint(0, m.width - 1), random.randint(0, m.height - 1), hole_size)
 
-    for i in range(random.randint(4, 10)):
-        hole_size = random.randint(4, 8)
-        m.create_cave(random.randint(0, m.width - 1), random.randint(0, m.height - 1), hole_size)
+        for i in range(random.randint(1, 3)):
+            saboteur = Saboteur(random.randint(0, m.width - 1), int(m.height / 2))
+            m.add_creature(saboteur)
 
-    for i in range(random.randint(1, 3)):
-        saboteur = Saboteur(random.randint(0, m.width - 1), int(m.height / 2))
-        m.add_creature(saboteur)
+        for i in range(random.randint(1, 5)):
+            wizard = Wizard(random.randint(0, m.width - 1), random.randint(int(m.height / 2), m.height - 1))
+            m.add_creature(wizard)
 
-    for i in range(random.randint(1, 5)):
-        wizard = Wizard(random.randint(0, m.width - 1), random.randint(int(m.height / 2), m.height - 1))
-        m.add_creature(wizard)
+        for i in range(random.randint(1, 10)):
+            treasure = Treasure(random.randint(0, m.width - 1), random.randint(10, m.height - 1))
+            m.add_item(treasure)
 
-    for i in range(random.randint(1, 10)):
-        treasure = Treasure(random.randint(0, m.width - 1), random.randint(10, m.height - 1))
-        m.add_item(treasure)
+        for i in range(random.randint(1, 10)):
+            map_item = Map(random.randint(0, m.width - 1), random.randint(5, m.height - 1))
+            m.add_item(map_item)
 
-    for i in range(random.randint(1, 10)):
-        map_item = Map(random.randint(0, m.width - 1), random.randint(5, m.height - 1))
-        m.add_item(map_item)
+        while True:
+            m.action()
 
-
-    curses.start_color()
-    curses.use_default_colors()
-    for i in range(0, curses.COLORS):
-        curses.init_pair(i + 1, i, -1)
-
-    while True:
-        m.action()
+if __name__ == '__main__':
+    curses.wrapper(main)
