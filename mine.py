@@ -27,7 +27,7 @@ class Space(Material):
 class Dirt(Material):
     def __init__(self):
         Material.__init__(self)
-        self.char = '░'
+        self.char = '█'
         dirt_colors = [95]
         self.color = dirt_colors[random.randint(0, len(dirt_colors) - 1)]
         self.toughness = 1
@@ -711,7 +711,7 @@ def main(screen):
         curses.start_color()
         curses.use_default_colors()
         for i in range(0, curses.COLORS):
-            curses.init_pair(i + 1, i, -1)
+            curses.init_pair(i + 1, 0, i)
 
         x = 0
         y = 0
@@ -723,11 +723,12 @@ def main(screen):
             stdscr.addstr(y, x, str(i), curses.color_pair(i))
 
         stdscr.refresh()
+        char = stdscr.getch()
     elif True:
         curses.start_color()
         curses.use_default_colors()
         for i in range(0, curses.COLORS):
-            curses.init_pair(i + 1, i, -1)
+            curses.init_pair(i + 1, i, 16)
 
         curses.curs_set(0)
 
