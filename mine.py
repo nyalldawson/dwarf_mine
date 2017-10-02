@@ -1,12 +1,12 @@
 import random
-import curses
 import sys
+import curses
 
-from materials import Lava, Dirt, Space
-from items import Treasure, Map
-from creatures import Miner, Saboteur, Wizard
 from message_box import MessageBox
+from materials import Lava, Dirt, Space
 from utils import Utils
+from items import Treasure
+from creatures import Miner, Saboteur
 
 
 class Mine:
@@ -189,64 +189,3 @@ class Mine:
         if self.feedback_timer == 0:
             self.clear_feedback()
         self.screen.refresh()
-
-
-def main(screen):
-    curses.start_color()
-    curses.use_default_colors()
-    curses.curs_set(0)
-
-    if False:
-
-        for i in range(0, curses.COLORS):
-            curses.init_pair(i + 1, 0, i)
-
-        x = 0
-        y = 0
-        for i in range(1000):
-            x += 4
-            if x > 180:
-                y += 1
-                x = 0
-            screen.addstr(y, x, str(i), curses.color_pair(i))
-
-        screen.refresh()
-        screen.getch()
-
-    elif True:
-        for i in range(0, curses.COLORS):
-            curses.init_pair(i + 1, i, 16)
-
-        height, width = screen.getmaxyx()
-
-        m = Mine(screen, width - 1, height - 1)
-        for i in range(random.randint(1, 200)):
-            miner = Miner(random.randint(0, m.width - 1), 0)
-            m.add_creature(miner)
-
-        for i in range(random.randint(4, 10)):
-            hole_size = random.randint(4, 8)
-            m.create_cave(random.randint(0, m.width - 1), random.randint(0, m.height - 1), hole_size)
-
-        for i in range(random.randint(1, 3)):
-            saboteur = Saboteur(random.randint(0, m.width - 1), int(m.height / 2))
-            m.add_creature(saboteur)
-
-        for i in range(random.randint(1, 5)):
-            wizard = Wizard(random.randint(0, m.width - 1), random.randint(int(m.height / 2), m.height - 1))
-            m.add_creature(wizard)
-
-        for i in range(random.randint(1, 10)):
-            treasure = Treasure(random.randint(0, m.width - 1), random.randint(10, m.height - 1))
-            m.add_item(treasure)
-
-        for i in range(random.randint(1, 10)):
-            map_item = Map(random.randint(0, m.width - 1), random.randint(5, m.height - 1))
-            m.add_item(map_item)
-
-        while True:
-            m.action()
-
-
-if __name__ == '__main__':
-    curses.wrapper(main)
