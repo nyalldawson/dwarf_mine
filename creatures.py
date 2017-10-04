@@ -1,7 +1,7 @@
 import random
 from enchantments import Tricked
 from traits import Lazy, Sneaky, Determined
-from materials import Rock
+from materials import Boulder
 from enchantments import SaboteurSpell, Firestarter
 from actions import ExploreAction, SleepAction, GoToAction
 
@@ -187,7 +187,7 @@ class Miner(Creature):
     def moved_from(self, x, y):
         if self.has_enchantment(Tricked):
             if random.randint(1, 5) == 1:
-                self.mine.set_material(x, y, Rock())
+                self.mine.set_material(x, y, Boulder())
 
     def move(self):
         if random.randint(1, 1000) <= (10 if self.has_trait(Lazy) else 1):

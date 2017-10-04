@@ -48,14 +48,35 @@ class Dirt(Material):
 
 class Rock(Material):
     """
-    Rock (or boulders). Hard to break through.
+    Rock. Hard to break through.
+    """
+
+    def __init__(self):
+        Material.__init__(self)
+        self.color = 60
+        self.toughness = 5
+
+
+class Boulder(Rock):
+    """
+    Boulders. Very hard to break through.
     """
 
     def __init__(self):
         Material.__init__(self)
         self.char = 'O'
-        self.color = 60
         self.toughness = 10
+
+
+class IgneousRock(Rock):
+    """
+    Igneous rock. Volcanic byproduct with moderate strength.
+    """
+
+    def __init__(self):
+        Material.__init__(self)
+        self.char = 'o'
+        self.toughness = 5
 
 
 class Fire(Material):
@@ -134,7 +155,7 @@ class Lava(Fire):
         self.temperature = random.randint(2000, 100000)
 
     def byproduct(self):
-        return Rock()
+        return IgneousRock()
 
     def get_spread_material(self):
         return Lava()
