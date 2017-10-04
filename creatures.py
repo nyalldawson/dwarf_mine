@@ -2,7 +2,7 @@ import random
 from enchantments import Tricked
 from traits import Lazy, Determined
 from materials import Rock
-from enchantments import SaboteurSpell
+from enchantments import SaboteurSpell, Firestarter
 from actions import ExploreAction, SleepAction, GoToAction
 
 
@@ -24,6 +24,12 @@ class Creature:
     def place_in_mine(self, mine):
         self.mine = mine
         self.look()
+
+    def get_char(self):
+        c = self.char
+        for e in self.enchantments:
+            c = e.alter_char(c)
+        return c
 
     def push_action(self, action):
         self.actions.insert(0, action)
@@ -106,10 +112,14 @@ class Wizard(Creature):
         creature = self.mine.get_creature(x, y)
         if isinstance(creature, Miner):
             # put a spell on him, if he doesn't have one already
-            if not creature.has_enchantment(Tricked):
-                creature.enchant(Tricked())
-                self.mine.push_feedback('Wizard cast a spell on a {}!'.format(creature.type))
-
+            if not creature.has_enchantment((Firestarter,Tricked)):
+                seed = random.randint(1,1000)
+                if seed < 50:
+                    creature.enchant(Tricked())
+                    self.mine.push_feedback('Wizard cast a trick on a {}!'.format(creature.type))
+                elif seed < 80:
+                    creature.enchant(Firestarter())
+                    self.mine.push_feedback('Wizard cast Firestarter on a {}!'.format(creature.type))
 
 class Miner(Creature):
     def __init__(self, x, y):

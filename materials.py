@@ -58,18 +58,17 @@ class Rock(Material):
         self.toughness = 10
 
 
-class Lava(Material):
+class Fire(Material):
     """
-    Lava. Nice and hot, and likes to flow around and fill
-    empty space.
+    Fire. Ouch!
     """
 
     def __init__(self):
         Material.__init__(self)
-        self.char = '#'
-        lava_color = [10, 161, 125]
-        self.color = lava_color[random.randint(0, len(lava_color) - 1)]
-        self.temperature = random.randint(2000, 100000)
+        self.char = '*'
+        fire_color = [10, 161, 125]
+        self.color = fire_color[random.randint(0, len(fire_color) - 1)]
+        self.temperature = random.randint(500, 1000)
 
     def action(self):
         # check adjacent cells
@@ -97,10 +96,10 @@ class Lava(Material):
                     break
 
                 if isinstance(self.mine.material(x, y), (Water, Space)):
-                    lava = Lava()
+                    new = self.get_spread_material()
                     self.temperature *= 0.9
-                    lava.temperature = self.temperature
-                    self.mine.set_material(x, y, lava)
+                    new.temperature = self.temperature
+                    self.mine.set_material(x, y, new)
                 material = self.mine.material(x, y)
                 if isinstance(material, Lava):
                     t = self.temperature * 0.9999 + material.temperature * 0.0001
@@ -113,7 +112,33 @@ class Lava(Material):
 
         self.temperature -= 1
         if self.temperature < 100:
-            self.mine.set_material(self.x, self.y, Rock())
+            self.mine.set_material(self.x, self.y, self.byproduct())
+
+    def byproduct(self):
+        return Space()
+
+    def get_spread_material(self):
+        return Fire()
+
+
+class Lava(Fire):
+
+    """
+    Lava. Nice and hot, and likes to flow around and fill
+    empty space.
+    """
+
+    def __init__(self):
+        Fire.__init__(self)
+        self.char = '#'
+        self.temperature = random.randint(2000, 100000)
+
+    def byproduct(self):
+        return Rock()
+
+    def get_spread_material(self):
+        return Lava()
+
 
 
 class Water(Material):

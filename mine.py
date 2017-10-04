@@ -172,7 +172,7 @@ class Mine:
         current_colors = [s.color for s in self.mine]
 
         for m in self.creatures:
-            current_state[m.y * self.width + m.x] = m.char
+            current_state[m.y * self.width + m.x] = m.get_char()
             current_colors[m.y * self.width + m.x] = m.color
 
         for i in self.items:
