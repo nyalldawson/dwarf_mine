@@ -63,7 +63,7 @@ class Boulder(Rock):
     """
 
     def __init__(self):
-        Material.__init__(self)
+        Rock.__init__(self)
         self.char = 'O'
         self.toughness = 10
 
@@ -74,7 +74,7 @@ class IgneousRock(Rock):
     """
 
     def __init__(self):
-        Material.__init__(self)
+        Rock.__init__(self)
         self.char = 'o'
         self.toughness = 5
 
