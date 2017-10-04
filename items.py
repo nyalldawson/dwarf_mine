@@ -20,6 +20,9 @@ class Item:
     def found_by(self, creature):
         pass
 
+    def alter_color(self):
+        return None
+
 
 class Treasure(Item):
     def __init__(self, x, y):

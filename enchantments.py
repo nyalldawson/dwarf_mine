@@ -19,15 +19,23 @@ class Enchantment:
     def alter_char(self, char):
         return char
 
+    def alter_color(self):
+        return None
+
+    def affect_visibility(self, visible):
+        return visible
+
 
 class Tricked(Enchantment):
     def __init__(self):
         Enchantment.__init__(self)
         self.time = 100
 
+    def alter_color(self):
+        return (135,3)
+
     def place_on_creature(self, creature):
         Enchantment.place_on_creature(self, creature)
-        creature.color = 135
         self.time = 1000
 
     def action(self):
@@ -52,12 +60,14 @@ class DeterminationSpell(Enchantment):
         self.time = 0
         self.trait = None
 
+    def alter_color(self):
+        return (230,1)
+
     def place_on_creature(self, creature):
         Enchantment.place_on_creature(self, creature)
         if not creature.has_trait(Determined):
             self.trait = Determined()
             creature.add_trait(self.trait)
-            creature.color = 230
             self.time = 300
 
     def action(self):
@@ -78,6 +88,9 @@ class Firestarter(Enchantment):
         self.countdown = 9*20 #multiple of 9
         self.trait = None
 
+    def alter_color(self):
+        return (197,10)
+
     def alter_char(self, char):
         return str(self.countdown / 20)
 
@@ -86,7 +99,6 @@ class Firestarter(Enchantment):
         if not creature.has_trait(Determined):
             self.trait = Determined()
             creature.add_trait(self.trait)
-        creature.color = 197
 
     def action(self):
         Enchantment.action(self)

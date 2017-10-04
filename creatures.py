@@ -12,8 +12,7 @@ class Creature:
         self.y = y
         self.char = '☺'
         self.mine = None
-        self.color = 206
-        self.original_color = 206
+        self.color = (206,0)
         self.enchantments = []
         self.view_distance = 0
         self.actions = []
@@ -30,6 +29,18 @@ class Creature:
         for e in self.enchantments:
             c = e.alter_char(c)
         return c
+
+    def get_color(self):
+        colors = [self.color]
+        for e in self.enchantments:
+            c = e.alter_color()
+            if c is not None:
+                colors.append(c)
+        for i in self.items:
+            c = i.alter_color()
+            if c is not None:
+                colors.append(c)
+        return max(colors, key=lambda x: x[1])[0]
 
     def push_action(self, action):
         self.actions.insert(0, action)
@@ -74,8 +85,6 @@ class Creature:
 
     def remove_enchantment(self, enchantment):
         self.enchantments.remove(enchantment)
-        if len(self.enchantments) == 0:
-            self.color = self.original_color
 
     def move(self):
         for e in self.enchantments:
@@ -98,7 +107,7 @@ class Creature:
 class Wizard(Creature):
     def __init__(self, x, y):
         Creature.__init__(self, x, y)
-        self.color = 11
+        self.color = (11,8)
         self.view_distance = 5
         self.type = 'Wizard'
 
@@ -209,7 +218,6 @@ class Saboteur(Miner):
     def __init__(self, x, y):
         Miner.__init__(self, x, y)
         self.char = '☺'
-        self.color = 2
-        self.original_color = self.color
+        self.color = (2,9)
         self.enchant(SaboteurSpell())
         self.type = 'Saboteur'

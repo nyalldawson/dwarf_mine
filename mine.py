@@ -173,7 +173,7 @@ class Mine:
 
         for m in self.creatures:
             current_state[m.y * self.width + m.x] = m.get_char()
-            current_colors[m.y * self.width + m.x] = m.color
+            current_colors[m.y * self.width + m.x] = m.get_color()
 
         for i in self.items:
             current_state[i.y * self.width + i.x] = i.char
