@@ -78,7 +78,6 @@ class Creature:
             self.color = self.original_color
 
     def move(self):
-        self.look()
         for e in self.enchantments:
             e.action()
 
@@ -107,6 +106,10 @@ class Wizard(Creature):
         Creature.place_in_mine(self, mine)
         hole_size = random.randint(2, 6)
         mine.create_cave(self.x, self.y, hole_size)
+
+    def move(self):
+        Creature.move(self)
+        self.look()
 
     def look_at(self, x, y):
         creature = self.mine.get_creature(x, y)
@@ -184,6 +187,7 @@ class Miner(Creature):
             self.mine.set_visibility(c[0], c[1], True)
 
         self.moved_from(old_x, old_y)
+        self.look()
 
     def look_at(self, x, y):
         self.mine.set_visibility(x, y, True)
