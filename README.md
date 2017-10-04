@@ -8,14 +8,14 @@ It seemed like a fun school holiday project to make a little Python script for h
 
 Rules he's written are things like:
 
-Wizard rules:
+### Wizard rules:
 
 1. A wizard is green
 2. If a wizard sees a miner, he puts a spell on him
 3. The spell makes the miner a saboteur (yep, he also loves https://boardgamegeek.com/boardgame/9220/saboteur). 
 4. After a bit of time the spell wears off
 
-Lava rules:
+### Lava rules:
 
 1. Lava starts at the bottom
 2. If lava touches a creature, it dies
@@ -23,8 +23,11 @@ Lava rules:
 4. Lava cools time and becomes rock
 
 
-FAQ
+## FAQ
 
 1. Don't you know about Dwarf Fortress?
 
 Yes. Yes I do. I think you've totally missed the point here.
+
+![dwarf mine in action](
+https://github.com/nyalldawson/dwarf_mine/blob/master/resources/pic.jpg?raw=true)
