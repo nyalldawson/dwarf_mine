@@ -1,5 +1,5 @@
 import random
-from enchantments import DeterminationSpell
+from enchantments import DeterminationSpell, Invisibility
 from creatures import Miner
 
 class Item:
@@ -32,7 +32,8 @@ class Treasure(Item):
         if random.randint(1, 5) == 1:
             treasures = ['magic ring']
             self.type = treasures[random.randint(0, len(treasures) - 1)]
-            self.spell = DeterminationSpell()
+            spells = [DeterminationSpell,Invisibility]
+            self.spell = spells[random.randint(0, len(spells) - 1)]()
         else:
             treasures = ['crown', 'gold nugget', 'diamond', 'shiny ring', 'gold ring', 'silver ring', 'treasure chest',
                          'gold coin']

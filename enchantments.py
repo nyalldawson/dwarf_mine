@@ -108,7 +108,18 @@ class Firestarter(Enchantment):
             self.creature.look()
             self.creature.mine.set_material(self.creature.x,self.creature.y,Fire())
 
-
     def remove_from_creature(self, creature):
         Enchantment.remove_from_creature(self, creature)
         creature.remove_trait(self.trait)
+
+
+class Invisibility(Enchantment):
+
+    def __init__(self):
+        Enchantment.__init__(self)
+
+    def alter_color(self):
+        return (237,9)
+
+    def affect_visibility(self, visible):
+        return False

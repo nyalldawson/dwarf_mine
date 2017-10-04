@@ -103,6 +103,14 @@ class Creature:
                 continue
             self.look_at(c[0], c[1])
 
+    def is_visible(self):
+        visible = True
+        for t in self.traits:
+            visible = t.affect_visibility(visible)
+        for e in self.enchantments:
+            visible = e.affect_visibility(visible)
+        return visible
+
 
 class Wizard(Creature):
     def __init__(self, x, y):
@@ -122,7 +130,7 @@ class Wizard(Creature):
 
     def look_at(self, x, y):
         creature = self.mine.get_creature(x, y)
-        if isinstance(creature, Miner):
+        if isinstance(creature, Miner) and creature.is_visible():
             # put a spell on him, if he doesn't have one already
             if not creature.has_enchantment((Firestarter,Tricked)):
                 seed = random.randint(1,1000)
