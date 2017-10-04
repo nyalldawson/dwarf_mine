@@ -1,9 +1,14 @@
+import random
+
 class Trait:
     """
     A creature character trait
     """
     def __init__(self):
         self.type = ''
+
+    def affect_visibility(self, visible):
+        return visible
 
 
 class Determined(Trait):
@@ -22,3 +27,17 @@ class Lazy(Trait):
     def __init__(self):
         Trait.__init__(self)
         self.type = 'lazy'
+
+
+class Sneaky(Trait):
+    """
+    Creature is sneaky, less likely to be seen
+    """
+    def __init__(self):
+        Trait.__init__(self)
+        self.type = 'lazy'
+
+    def affect_visibility(self, visible):
+        if random.randint(1,10) < 9:
+            return False
+        return visible

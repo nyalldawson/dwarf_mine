@@ -1,6 +1,6 @@
 import random
 from enchantments import Tricked
-from traits import Lazy, Determined
+from traits import Lazy, Sneaky, Determined
 from materials import Rock
 from enchantments import SaboteurSpell, Firestarter
 from actions import ExploreAction, SleepAction, GoToAction
@@ -154,6 +154,8 @@ class Miner(Creature):
     def define_character(self):
         if random.randint(1, 30) == 1:
             self.add_trait(Lazy())
+        if random.randint(1, 30) == 1:
+            self.add_trait(Sneaky())
 
     def place_in_mine(self, mine):
         Creature.place_in_mine(self, mine)
