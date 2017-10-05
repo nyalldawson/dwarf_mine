@@ -117,3 +117,17 @@ class Invisibility(Enchantment):
 
     def affect_visibility(self, visible):
         return False
+
+
+class Frozen(Enchantment):
+
+    def __init__(self):
+        super().__init__()
+        self.time = 150
+
+    def alter_color(self):
+        return (527,9)
+
+    def affect_move_to(self, x, y):
+        return None
+
