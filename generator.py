@@ -13,7 +13,9 @@ class MineGenerator():
     def build_mine(self, screen):
 
         m = Mine(screen, self.width, self.height)
-        for i in range(random.randint(1, 200)):
+
+        miner_count = int(self.args.miners) if self.args.miners is not None else random.randint(1, 200)
+        for i in range(miner_count):
             miner = Miner(random.randint(0, m.width - 1), 0)
             m.add_creature(miner)
 
@@ -27,7 +29,7 @@ class MineGenerator():
 
         wizard_count = int(self.args.wizards) if self.args.wizards is not None else random.randint(1, 5)
         for i in range(wizard_count):
-            wizard = Wizard(random.randint(0, m.width - 1), random.randint(int(m.height / 2), m.height - 1))
+            wizard = Wizard(random.randint(0, m.width - 1), random.randint(1, m.height - 1))
             m.add_creature(wizard)
 
         for i in range(random.randint(1, 10)):
