@@ -6,6 +6,7 @@ from materials import Fire
 class Enchantment:
     def __init__(self):
         self.creature = None
+        self.time = None
 
     def place_on_creature(self, creature):
         self.creature = creature
@@ -14,7 +15,10 @@ class Enchantment:
         creature.remove_enchantment(self)
 
     def action(self):
-        pass
+        if self.time is not None:
+            self.time -= 1
+            if self.time < 0:
+                self.remove_from_creature(self.creature)
 
     def alter_char(self, char):
         return char
@@ -41,12 +45,6 @@ class Tricked(Enchantment):
         Enchantment.place_on_creature(self, creature)
         self.time = 1000
 
-    def action(self):
-        Enchantment.action(self)
-        self.time -= 1
-        if self.time < 0:
-            self.remove_from_creature(self.creature)
-
 
 class SaboteurSpell(Tricked):
     def __init__(self):
@@ -60,7 +58,6 @@ class SaboteurSpell(Tricked):
 class DeterminationSpell(Enchantment):
     def __init__(self):
         Enchantment.__init__(self)
-        self.time = 0
         self.trait = None
 
     def alter_color(self):
@@ -72,12 +69,6 @@ class DeterminationSpell(Enchantment):
             self.trait = Determined()
             creature.add_trait(self.trait)
             self.time = 300
-
-    def action(self):
-        Enchantment.action(self)
-        self.time -= 1
-        if self.time < 0:
-            self.remove_from_creature(self.creature)
 
     def remove_from_creature(self, creature):
         Enchantment.remove_from_creature(self, creature)
