@@ -30,13 +30,13 @@ class Treasure(Item):
         self.char = '☼'
         self.color = 12
         if random.randint(1, 5) == 1:
-            treasures = ['magic ring']
+            treasures = ['magic ring', 'magic hat', 'magic glove']
             self.type = treasures[random.randint(0, len(treasures) - 1)]
             spells = [DeterminationSpell,Invisibility]
             self.spell = spells[random.randint(0, len(spells) - 1)]()
         else:
             treasures = ['crown', 'gold nugget', 'diamond', 'shiny ring', 'gold ring', 'silver ring', 'treasure chest',
-                         'gold coin']
+                         'gold coin', 'ruby', 'shiny necklace','precious cup']
             self.type = treasures[random.randint(0, len(treasures) - 1)]
             self.spell = None
 
