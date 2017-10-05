@@ -93,6 +93,28 @@ class Creature:
         if len(self.actions) > 0:
             self.actions[0].do()
 
+    def move_to(self, x, y):
+        for t in self.traits:
+            res = t.affect_move_to(x,y)
+            if res is None:
+                return False
+            (x,y)=res
+        for e in self.enchantments:
+            res = e.affect_move_to(x,y)
+            if res is None:
+                return False
+            (x,y)=res
+
+        old_x = self.x
+        old_y = self.y
+        self.x = x
+        self.y = y
+        self.moved_from(old_x, old_y)
+        return True
+
+    def moved_from(self, x, y):
+        pass
+
     def look_at(self, x, y):
         pass
 
@@ -196,17 +218,13 @@ class Miner(Creature):
         Creature.move(self)
 
     def move_to(self, x, y):
-        old_x = self.x
-        old_y = self.y
-        self.x = x
-        self.y = y
-
-        visible_cells = self.mine.get_visible_cells(x, y, self.view_distance)
-        for c in visible_cells:
-            self.mine.set_visibility(c[0], c[1], True)
-
-        self.moved_from(old_x, old_y)
-        self.look()
+        if super().move_to(x,y):
+            visible_cells = self.mine.get_visible_cells(x, y, self.view_distance)
+            for c in visible_cells:
+                self.mine.set_visibility(c[0], c[1], True)
+            self.look()
+            return True
+        return False
 
     def look_at(self, x, y):
         self.mine.set_visibility(x, y, True)

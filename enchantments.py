@@ -25,6 +25,9 @@ class Enchantment:
     def affect_visibility(self, visible):
         return visible
 
+    def affect_move_to(self, x, y):
+        # return None to block movement
+        return (x,y)
 
 class Tricked(Enchantment):
     def __init__(self):
