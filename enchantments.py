@@ -2,6 +2,7 @@ import math
 import random
 from traits import Determined
 from materials import Fire
+from actions import SleepAction
 
 class Enchantment:
     def __init__(self):
@@ -130,4 +131,21 @@ class Frozen(Enchantment):
 
     def affect_move_to(self, x, y):
         return None
+
+
+class SleepSpell(Enchantment):
+
+    def __init__(self):
+        super().__init__()
+        self.sleep_action = None
+
+    def alter_color(self):
+        return (42,9)
+
+    def place_on_creature(self, creature):
+        super().place_on_creature(creature)
+        self.sleep_action=SleepAction()
+        self.creature.push_action(self.sleep_action)
+        self.time=self.sleep_action.duration
+
 
