@@ -4,7 +4,7 @@ from generator import MineGenerator
 from utils import show_colors
 
 
-def main(screen, lights):
+def main(screen, args):
     curses.start_color()
     curses.use_default_colors()
     curses.curs_set(0)
@@ -14,10 +14,10 @@ def main(screen, lights):
 
     height, width = screen.getmaxyx()
 
-    g = MineGenerator(width - 1, height - 1)
+    g = MineGenerator(width - 1, height - 1, args)
     m = g.build_mine(screen)
 
-    if lights:
+    if args.lights:
         m.dark = False
 
     while True:
@@ -28,8 +28,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--show-colors", help="shows a grid of available colors", action="store_true")
     parser.add_argument("-l", "--lights", help="shows all grid cells, not just explored ones", action="store_true")
+    parser.add_argument("--wizards", help="how many wizards to add", type=int)
     args = parser.parse_args()
     if args.show_colors:
         curses.wrapper(show_colors)
     else:
-        curses.wrapper(main, args.lights)
+        curses.wrapper(main, args)

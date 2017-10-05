@@ -5,9 +5,10 @@ from items import Treasure, Map
 
 class MineGenerator():
 
-    def __init__(self, width, height):
+    def __init__(self, width, height, args):
         self.width = width
         self.height = height
+        self.args = args
 
     def build_mine(self, screen):
 
@@ -24,7 +25,8 @@ class MineGenerator():
             saboteur = Saboteur(random.randint(0, m.width - 1), int(m.height / 2))
             m.add_creature(saboteur)
 
-        for i in range(random.randint(1, 5)):
+        wizard_count = int(self.args.wizards) if self.args.wizards is not None else random.randint(1, 5)
+        for i in range(wizard_count):
             wizard = Wizard(random.randint(0, m.width - 1), random.randint(int(m.height / 2), m.height - 1))
             m.add_creature(wizard)
 
