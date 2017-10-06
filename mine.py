@@ -19,10 +19,10 @@ class Mine:
         self.mine = []
         self.visibility = []
         self.colors = []
-        self.build_mine()
         self.creatures = []
         self.items = []
         self.dark = True
+        self.build_mine()
 
     def push_feedback(self, line):
         self.screen.addstr(self.feedback_line, 0, line + (' ' * (self.width - len(line))))
@@ -62,9 +62,7 @@ class Mine:
 
     def set_material(self, x, y, material):
         self.mine[y * self.width + x] = material
-        material.x = x
-        material.y = y
-        material.mine = self
+        material.placed_in_mine(self, x,y)
 
     def add_creature(self, creature):
         self.creatures.append(creature)

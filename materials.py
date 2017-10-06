@@ -21,6 +21,17 @@ class Material:
     def get_char(self):
         return self.char
 
+    def touch_creature(self, creature):
+        pass
+
+    def placed_in_mine(self, mine, x, y):
+        self.mine = mine
+        self.x = x
+        self.y = y
+        creature = self.mine.get_creature(self.x, self.y)
+        if creature is not None:
+            self.touch_creature(creature)
+
 
 class Space(Material):
     """
@@ -127,10 +138,6 @@ class Fire(Material):
                     material.temperature = self.temperature * 0.0001 + material.temperature * 0.9999
                     self.temperature = t
 
-                creature = self.mine.get_creature(x, y)
-                if creature is not None:
-                    creature.die()
-
         self.temperature -= 1
         if self.temperature < 100:
             self.mine.set_material(self.x, self.y, self.byproduct())
@@ -140,6 +147,9 @@ class Fire(Material):
 
     def get_spread_material(self):
         return Fire()
+
+    def touch_creature(self, creature):
+        creature.die('was burnt by fire')
 
 
 class Lava(Fire):
@@ -160,6 +170,8 @@ class Lava(Fire):
     def get_spread_material(self):
         return Lava()
 
+    def touch_creature(self, creature):
+        creature.die('was burnt by lava')
 
 
 class Water(Material):
@@ -277,3 +289,7 @@ class Water(Material):
         if self.capacity < 1:
             self.mine.set_material(self.x, self.y, Space())
             return
+
+    def touch_creature(self, creature):
+        if self.capacity > 70:
+            creature.die('drowned')
