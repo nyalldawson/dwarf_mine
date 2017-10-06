@@ -109,6 +109,7 @@ class AttackAction(GoToAction):
     def __init__(self, target):
         super().__init__(target.x,target.y)
         self.target = target
+        self.boredness = 0
 
         def die_callback(creature):
             self.creature.remove_action(self)
@@ -116,6 +117,8 @@ class AttackAction(GoToAction):
 
     def can_remove(self):
         if self.creature.allegiance_to(self.target) != Allegiance.Hostile:
+            return True
+        elif self.boredness > 20:
             return True
         else:
             return False
@@ -138,8 +141,10 @@ class AttackAction(GoToAction):
         return Utils.exact_distance(self.target.x, self.target.y, x, y)
 
     def do(self):
+        self.boredness += 1
         if self.can_attack():
             self.creature.attack(self.target)
+            self.boredness = 0
             return
 
         super().do()
