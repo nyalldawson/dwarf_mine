@@ -3,7 +3,7 @@ from enchantments import Tricked
 from traits import Lazy, Sneaky, Determined
 from materials import Boulder
 from enchantments import SaboteurSpell, Firestarter, Frozen, SleepSpell
-from actions import ExploreAction, SleepAction, GoToAction, AttackAction
+from actions import ExploreAction, SleepAction, GoToAction, AttackAction, CallToArms
 from allegiance import Allegiance
 
 class Creature:
@@ -295,6 +295,11 @@ class Miner(Creature):
                     self.push_action(GoToAction(x, y))
 
         super().look_at(x,y)
+
+    def target_attack_at(self, creature):
+        super().target_attack_at(creature)
+        self.mine.push_feedback("Help! There's a {} over here!".format(creature.type))
+        self.push_action(CallToArms(creature))
 
     def attack(self, creature):
         super().attack(creature)

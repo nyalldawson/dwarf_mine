@@ -150,6 +150,48 @@ class AttackAction(GoToAction):
         super().do()
 
 
+class CallToArms(Action):
+
+    def __init__(self, target, loudness=10):
+        super().__init__()
+        self.target = target
+        self.loudness = loudness
+
+    def can_remove(self):
+        if self.creature.allegiance_to(self.target) != Allegiance.Hostile:
+            return True
+        else:
+            return False
+
+    def do(self):
+        super().do()
+
+        if self.can_remove():
+            self.creature.remove_action(self)
+            return
+
+        for c in self.creature.mine.creatures:
+            if c == self.creature:
+                continue
+
+            if Utils.distance(c.x,c.y,self.creature.x,self.creature.y) > self.loudness:
+                continue
+
+            if c.allegiance_to(self.creature) == Allegiance.Friendly\
+                and c.allegiance_to(self.target) != Allegiance.Friendly:
+
+                has_attack = False
+                for a in c.actions:
+                    if isinstance(a, AttackAction):
+                        has_attack = True
+                        break
+
+                if not has_attack:
+                    c.push_action(AttackAction(self.target))
+
+        self.creature.remove_action(self)
+
+
 class ExploreAction(Action):
     def __init__(self):
         Action.__init__(self)
