@@ -68,10 +68,12 @@ class Creature:
         self.items.append(item)
         self.mine.push_feedback('{} found a {}!'.format(self.type, item.type))
         item.found_by(self)
+        self.mine.stats.item_collected(self, item)
 
-    def die(self):
+    def die(self, message):
+        self.mine.stats.creature_died(self,message)
         self.mine.remove_creature(self)
-        self.mine.push_feedback('A {} died!'.format(self.type))
+        self.mine.push_feedback('A {} {}!'.format(self.type, message))
 
     def has_enchantment(self, enchantment):
         for e in self.enchantments:

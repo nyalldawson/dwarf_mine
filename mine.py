@@ -7,11 +7,12 @@ from materials import Lava, Dirt, Space, Water
 from utils import Utils
 from items import Treasure
 from creatures import Miner, Saboteur
-
+from stats import Stats
 
 class Mine:
     def __init__(self, screen, width, height):
         self.screen = screen
+        self.stats = Stats(screen, self)
         self.width = width
         self.height = height - 1
         self.feedback_line = height - 1
@@ -159,10 +160,12 @@ class Mine:
 
         if len([i for i in self.items if isinstance(i, Treasure)]) == 0:
             self.push_message('Dwarves won!')
+            self.stats.show()
             sys.exit()
 
         if len([c for c in self.creatures if isinstance(c, Miner) and not isinstance(c, Saboteur)]) == 0:
             self.push_message('All dwarves died\n\nYou lose!')
+            self.stats.show()
             sys.exit()
 
     def print_current_level(self):
@@ -188,3 +191,7 @@ class Mine:
         if self.feedback_timer == 0:
             self.clear_feedback()
         self.screen.refresh()
+        c = self.screen.getch()
+        if c != -1:
+            if c == 105:
+                self.stats.show()

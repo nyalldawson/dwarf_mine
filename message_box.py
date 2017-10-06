@@ -18,7 +18,10 @@ class MessageBox:
         self.draw_message(left, top, message_width, lines)
 
         self.screen.refresh()
-        screen.getch()
+        while True:
+            c = screen.getch()
+            if c != -1:
+                break
 
     def draw_box(self, left, top, width, height):
         self.screen.addstr(top - 1, left - 1, '+' + ('-' * (width + 2)) + '+', curses.color_pair(215))
