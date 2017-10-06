@@ -203,7 +203,6 @@ class Mine:
             if c == 105:
                 self.stats.show()
             elif c == 113:
-                self.stats.show()
                 sys.exit()
             else:
                 self.push_feedback(str(c))
