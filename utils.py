@@ -41,3 +41,33 @@ def show_colors(screen):
 
     screen.refresh()
     screen.getch()
+
+
+class Rect():
+
+    def __init__(self,x1,y1,x2,y2):
+        self.x1 = min(x1,x2)
+        self.y1 = min(y1,y2)
+        self.x2 = max(x1,x2)
+        self.y2 = max(y1,y2)
+
+    def center(self):
+        return (math.floor((self.x1+self.x2)/2), math.floor((self.y1+self.y2)/2))
+
+    def get_cells(self):
+        cells = []
+        for x in range(self.x1,self.x2+1):
+            for y in range(self.y1, self.y2+1):
+                cells.append((x,y))
+        return cells
+
+    def remove_invalid(self, mine):
+        self.x1 = max(self.x1, 0)
+        self.x2 = min(self.x2, mine.width -1 )
+        self.y1 = max( self.y1, 0)
+        self.y2 = min(self.y2,mine.height -1 )
+
+    @staticmethod
+    def from_center(x,y,width,height):
+        return Rect(x-math.ceil(width / 2),y-math.floor(height/2), x+math.floor(width/2), y+math.ceil(height/2))
+
