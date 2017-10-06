@@ -101,6 +101,14 @@ class Creature:
     def remove_enchantment(self, enchantment):
         self.enchantments.remove(enchantment)
 
+    def can_move(self, x, y):
+        for m in self.mine.creatures:
+            if m == self:
+                continue
+            if m.x == x and m.y == y:
+                return False
+        return True
+
     def move(self):
         for e in self.enchantments:
             e.action()
@@ -186,7 +194,10 @@ class Wizard(Creature):
         super().move()
         self.look()
 
-    def attack(self, creature):
+    def can_move(self, x, y):
+        return False
+
+    def target_attack_at(self, creature):
         seed = random.randint(1,1300)
         spell = None
         if seed < 50:
@@ -232,14 +243,6 @@ class Miner(Creature):
     def place_in_mine(self, mine):
         super().place_in_mine(mine)
         mine.set_visibility(self.x, self.y, True)
-
-    def can_move(self, x, y):
-        for m in self.mine.creatures:
-            if m == self:
-                continue
-            if m.x == x and m.y == y:
-                return False
-        return True
 
     def decided_to_dig(self, x, y):
         if self.has_trait(Determined) and random.randint(1, 2) == 1:
