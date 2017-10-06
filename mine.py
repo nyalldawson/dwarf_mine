@@ -89,6 +89,9 @@ class Mine:
         return 0 <= x < self.width and 0 <= y < self.height
 
     def is_visible_from(self, x1, y1, x2, y2):
+        if abs(x1-x2)<=1 and abs(y2-y1)<=1:
+            return True
+
         line = Utils.line_between(x1, y1, x2, y2)
         for pt in line:
             if not self.is_empty(pt[0], pt[1]):
