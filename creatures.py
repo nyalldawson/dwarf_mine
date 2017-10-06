@@ -6,6 +6,10 @@ from enchantments import SaboteurSpell, Firestarter, Frozen, SleepSpell
 from actions import ExploreAction, SleepAction, GoToAction
 
 
+class Allegiance:
+    Hostile, Neutral, Friendly = range(3)
+
+
 class Creature:
     def __init__(self, x, y):
         self.x = x
@@ -19,6 +23,10 @@ class Creature:
         self.items = []
         self.traits = []
         self.type = 'Creature'
+        self.friends = []
+        self.friendly_types = []
+        self.enemies = []
+        self.enemy_types = []
 
     def place_in_mine(self, mine):
         self.mine = mine
@@ -135,50 +143,73 @@ class Creature:
             visible = e.affect_visibility(visible)
         return visible
 
+    def allegiance_to(self, creature):
+        if creature in self.friends:
+            return Allegiance.Friendly
+        elif creature in self.enemies:
+            return Allegiance.Hostile
+        elif creature.__class__ in self.friendly_types:
+            return Allegiance.Friendly
+        elif creature.__class__ in self.enemy_types:
+            return Allegiance.Hostile
+        else:
+            return Allegiance.Neutral
+
 
 class Wizard(Creature):
     def __init__(self, x, y):
-        Creature.__init__(self, x, y)
+        super().__init__(x, y)
         self.color = (11,8)
         self.view_distance = 5
         self.type = 'Wizard'
+        self.enemy_types.append(Miner)
 
     def place_in_mine(self, mine):
-        Creature.place_in_mine(self, mine)
+        super().place_in_mine(mine)
         hole_size = random.randint(2, 6)
         mine.create_cave(self.x, self.y, hole_size)
 
     def move(self):
-        Creature.move(self)
+        super().move()
         self.look()
 
     def look_at(self, x, y):
         creature = self.mine.get_creature(x, y)
-        if isinstance(creature, Miner) and creature.is_visible():
-            # put a spell on him, if he doesn't have one already
-            if not creature.has_enchantment((Firestarter,Tricked,Frozen,SleepSpell)):
-                seed = random.randint(1,1300)
-                if seed < 50:
-                    creature.enchant(Tricked())
-                    self.mine.push_feedback('Wizard cast a trick on a {}!'.format(creature.type))
-                elif seed < 80:
-                    creature.enchant(Firestarter())
-                    self.mine.push_feedback('Wizard cast Firestarter on a {}!'.format(creature.type))
-                elif seed < 130:
-                    creature.enchant(Frozen())
-                    self.mine.push_feedback('Wizard cast Freeze on a {}!'.format(creature.type))
-                elif seed < 160:
-                    creature.enchant(SleepSpell())
-                    self.mine.push_feedback('Wizard cast Sleep on a {}!'.format(creature.type))
+        if creature is not None and creature.is_visible() and self.allegiance_to(creature) == Allegiance.Hostile:
+            seed = random.randint(1,1300)
+            spell = None
+            if seed < 50:
+                spell = Tricked()
+                self.mine.push_feedback('Wizard cast a trick on a {}!'.format(creature.type))
+            elif seed < 80:
+                spell = Firestarter()
+                self.mine.push_feedback('Wizard cast Firestarter on a {}!'.format(creature.type))
+            elif seed < 130:
+                spell = Frozen()
+                self.mine.push_feedback('Wizard cast Freeze on a {}!'.format(creature.type))
+            elif seed < 160:
+                spell = SleepSpell()
+                self.mine.push_feedback('Wizard cast Sleep on a {}!'.format(creature.type))
+            if spell is not None:
+                def remove_allegiance(spell,creature):
+                    creature.friends.remove(self)
+                    self.friends.remove(creature)
+
+                spell.add_removal_callback(remove_allegiance)
+                creature.enchant(spell)
+                creature.friends.append(self)
+                self.friends.append(creature)
+
 
 class Miner(Creature):
     def __init__(self, x, y):
-        Creature.__init__(self, x, y)
+        super().__init__(x, y)
         self.likes_to_go_vertical = random.randint(10, 20)
         self.likes_to_go_horizontal = random.randint(10, 20)
         self.view_distance = 5
         self.push_action(ExploreAction())
         self.type = 'Miner'
+        self.enemy_types.extend((Wizard, Saboteur))
         self.define_character()
 
     def define_character(self):
@@ -188,7 +219,7 @@ class Miner(Creature):
             self.add_trait(Sneaky())
 
     def place_in_mine(self, mine):
-        Creature.place_in_mine(self, mine)
+        super().place_in_mine(mine)
         mine.set_visibility(self.x, self.y, True)
 
     def can_move(self, x, y):
@@ -223,7 +254,7 @@ class Miner(Creature):
         if random.randint(1, 1000) <= (10 if self.has_trait(Lazy) else 1):
             self.push_action(SleepAction())
 
-        Creature.move(self)
+        super().move()
 
     def move_to(self, x, y):
         if super().move_to(x,y):
@@ -252,7 +283,7 @@ class Miner(Creature):
 
 class Saboteur(Miner):
     def __init__(self, x, y):
-        Miner.__init__(self, x, y)
+        super().__init__(x, y)
         self.char = '☺'
         self.color = (2,9)
         self.enchant(SaboteurSpell())

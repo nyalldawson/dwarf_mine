@@ -8,12 +8,15 @@ class Enchantment:
     def __init__(self):
         self.creature = None
         self.time = None
+        self.removal_callbacks = []
 
     def place_on_creature(self, creature):
         self.creature = creature
 
     def remove_from_creature(self, creature):
         creature.remove_enchantment(self)
+        for c in self.removal_callbacks:
+            c(self,creature)
 
     def action(self):
         if self.time is not None:
@@ -33,6 +36,10 @@ class Enchantment:
     def affect_move_to(self, x, y):
         # return None to block movement
         return (x,y)
+
+    def add_removal_callback(self, callback):
+        self.removal_callbacks.append(callback)
+
 
 class Tricked(Enchantment):
     def __init__(self):
