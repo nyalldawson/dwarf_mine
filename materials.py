@@ -240,7 +240,7 @@ class Water(Material):
 
         # diagonal flow
         if self.x > 0 and self.y < self.mine.height - 1:
-            if self.mine.is_empty(self.x - 1, self.y + 1):
+            if isinstance(self.mine.material(self.x - 1, self.y + 1),Space):
                 self.mine.set_material(self.x - 1, self.y + 1, Water(self.capacity))
                 self.mine.set_material(self.x, self.y, Space())
                 return
@@ -254,7 +254,7 @@ class Water(Material):
                     self.capacity = new_capacity - 100
                     other.capacity = 100
         if self.x < self.mine.width - 1 and self.y < self.mine.height - 1:
-            if self.mine.is_empty(self.x + 1, self.y + 1):
+            if isinstance(self.mine.material(self.x + 1, self.y + 1),Space):
                 self.mine.set_material(self.x + 1, self.y + 1, Water(self.capacity))
                 self.mine.set_material(self.x, self.y, Space())
                 return
