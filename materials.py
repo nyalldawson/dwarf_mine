@@ -149,7 +149,8 @@ class Fire(Material):
         return Fire()
 
     def touch_creature(self, creature):
-        creature.die('was burnt by fire')
+        if self.temperature > 130:
+            creature.die('was burnt by fire')
 
 
 class Lava(Fire):
@@ -171,7 +172,8 @@ class Lava(Fire):
         return Lava()
 
     def touch_creature(self, creature):
-        creature.die('was burnt by lava')
+        if self.temperature > 130:
+            creature.die('was burnt by lava')
 
 
 class Water(Material):
