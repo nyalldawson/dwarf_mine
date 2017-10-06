@@ -319,8 +319,8 @@ class Miner(Creature):
         super().attack(creature)
         self.mine.screen.addstr(self.y, self.x, '!')
         if random.randint(1,400) == 1:
-            creature.die('was killed by a Miner')
-            self.mine.push_message('Miner killed a {}'.format(creature.type))
+            creature.die('was killed by a {}'.format(self.type))
+            self.mine.push_message('{} killed a {}'.format(self.type, creature.type))
 
 
 class Saboteur(Miner):
