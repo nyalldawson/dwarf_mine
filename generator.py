@@ -1,4 +1,5 @@
 import random
+import math
 from creatures import Miner,Saboteur,Wizard
 from mine import Mine
 from items import Treasure, Map
@@ -29,7 +30,7 @@ class MineGenerator():
 
         wizard_count = int(self.args.wizards) if self.args.wizards is not None else random.randint(1, 5)
         for i in range(wizard_count):
-            wizard = Wizard(random.randint(0, m.width - 1), random.randint(1, m.height - 1))
+            wizard = Wizard(random.randint(0, m.width - 1), random.randint(math.ceil(m.height/3), m.height - 1))
             m.add_creature(wizard)
 
         for i in range(random.randint(1, 10)):
