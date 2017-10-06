@@ -186,8 +186,9 @@ class SearchAction(GoToAction):
 
     def get_target_locations(self):
         for c in self.cells:
-            if self.creature.mine.is_visible(c[0],c[1]):
+            if self.creature.mine.is_visible(c[0],c[1]) and self.creature.mine.is_empty(c[0],c[1]):
                 self.cells.remove(c)
+        random.shuffle(self.cells)
         return self.cells
 
 
