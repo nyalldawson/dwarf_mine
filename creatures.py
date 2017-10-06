@@ -3,12 +3,8 @@ from enchantments import Tricked
 from traits import Lazy, Sneaky, Determined
 from materials import Boulder
 from enchantments import SaboteurSpell, Firestarter, Frozen, SleepSpell
-from actions import ExploreAction, SleepAction, GoToAction
-
-
-class Allegiance:
-    Hostile, Neutral, Friendly = range(3)
-
+from actions import ExploreAction, SleepAction, GoToAction, AttackAction
+from allegiance import Allegiance
 
 class Creature:
     def __init__(self, x, y):
@@ -27,6 +23,8 @@ class Creature:
         self.friendly_types = []
         self.enemies = []
         self.enemy_types = []
+        self.alive = True
+        self.die_callbacks = []
 
     def place_in_mine(self, mine):
         self.mine = mine
@@ -55,7 +53,8 @@ class Creature:
         action.added_to_creature(self)
 
     def remove_action(self, action):
-        self.actions.remove(action)
+        if action in self.actions:
+            self.actions.remove(action)
 
     def add_trait(self, trait):
         self.traits.append(trait)
@@ -82,6 +81,12 @@ class Creature:
         self.mine.stats.creature_died(self,message)
         self.mine.remove_creature(self)
         self.mine.push_feedback('A {} {}!'.format(self.type, message))
+        self.alive = False
+        for c in self.die_callbacks:
+            c(self)
+
+    def push_die_callback(self, callback):
+        self.die_callbacks.append(callback)
 
     def has_enchantment(self, enchantment):
         for e in self.enchantments:
@@ -128,7 +133,10 @@ class Creature:
     def look_at(self, x, y):
         creature = self.mine.get_creature(x, y)
         if creature is not None and creature.is_visible() and self.allegiance_to(creature) == Allegiance.Hostile:
-            self.attack(creature)
+            self.target_attack_at(creature)
+
+    def target_attack_at(self, creature):
+        self.push_action(AttackAction(creature))
 
     def attack(self, creature):
         pass
@@ -284,6 +292,13 @@ class Miner(Creature):
                     self.push_action(GoToAction(x, y))
 
         super().look_at(x,y)
+
+    def attack(self, creature):
+        super().attack(creature)
+        self.mine.screen.addstr(self.y, self.x, '!')
+        if random.randint(1,1000) == 1:
+            creature.die('was killed by a Miner')
+            self.mine.push_message('Miner killed a {}'.format(creature.type))
 
 
 class Saboteur(Miner):

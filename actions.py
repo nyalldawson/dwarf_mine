@@ -105,7 +105,44 @@ class GoToAction(Action):
         return
 
 
-        return
+class AttackAction(GoToAction):
+    def __init__(self, target):
+        super().__init__(target.x,target.y)
+        self.target = target
+
+        def die_callback(creature):
+            self.creature.remove_action(self)
+        self.target.push_die_callback(die_callback)
+
+    def can_remove(self):
+        if self.creature.allegiance_to(self.target) != Allegiance.Hostile:
+            return True
+        else:
+            return False
+
+    def can_attack(self):
+        return not self.can_remove() and (abs(self.creature.x - self.target.x) <= 1) and (abs(self.creature.y - self.target.y) <= 1)
+
+    def get_target_locations(self):
+        if self.can_attack():
+            return []
+
+        return [(self.target.x,self.target.y),
+                (self.target.x-1,self.target.y),
+                (self.target.x+1,self.target.y),
+                (self.target.x,self.target.y-1),
+                (self.target.x,self.target.y+1)]
+
+    def score_move(self,x,y):
+        #less is better
+        return Utils.exact_distance(self.target.x, self.target.y, x, y)
+
+    def do(self):
+        if self.can_attack():
+            self.creature.attack(self.target)
+            return
+
+        super().do()
 
 
 class ExploreAction(Action):

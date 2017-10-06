@@ -71,7 +71,8 @@ class Mine:
         self.set_material(creature.x, creature.y, Space())
 
     def remove_creature(self, creature):
-        self.creatures.remove(creature)
+        if creature in self.creatures:
+            self.creatures.remove(creature)
 
     def add_item(self, item):
         self.items.append(item)
