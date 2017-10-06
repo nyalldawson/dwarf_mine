@@ -127,7 +127,7 @@ class Frozen(Enchantment):
         self.time = 150
 
     def alter_color(self):
-        return (527,9)
+        return (15,9)
 
     def affect_move_to(self, x, y):
         return None
