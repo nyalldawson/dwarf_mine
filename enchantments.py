@@ -2,7 +2,7 @@ import math
 import random
 from traits import Determined
 from materials import Fire
-from actions import SleepAction
+from actions import SleepAction, GoToAction
 
 class Enchantment:
     def __init__(self):
@@ -101,6 +101,9 @@ class Firestarter(Enchantment):
         if not creature.has_trait(Determined):
             self.trait = Determined()
             creature.add_trait(self.trait)
+            run_action = GoToAction(random.randint(0,creature.mine.width-1),
+                                    random.randint(0, creature.mine.height- 1))
+            creature.push_action(run_action)
 
     def action(self):
         Enchantment.action(self)
