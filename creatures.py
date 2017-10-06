@@ -152,6 +152,9 @@ class Creature:
         pass
 
     def met_friend(self, creature):
+        if [a for a in creature.actions if isinstance(a,SleepAction)]:
+            return
+
         for a in self.actions:
             if isinstance(a, SearchAction):
                 if not [x for x in creature.actions if isinstance(x, SearchAction)]:
