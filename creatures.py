@@ -200,16 +200,16 @@ class Wizard(Creature):
     def target_attack_at(self, creature):
         seed = random.randint(1,1300)
         spell = None
-        if seed < 50:
+        if seed < 10:
             spell = Tricked()
             self.mine.push_feedback('Wizard cast a trick on a {}!'.format(creature.type))
-        elif seed < 80:
+        elif seed < 15:
             spell = Firestarter()
             self.mine.push_feedback('Wizard cast Firestarter on a {}!'.format(creature.type))
-        elif seed < 130:
+        elif seed < 25:
             spell = Frozen()
             self.mine.push_feedback('Wizard cast Freeze on a {}!'.format(creature.type))
-        elif seed < 160:
+        elif seed < 35:
             spell = SleepSpell()
             self.mine.push_feedback('Wizard cast Sleep on a {}!'.format(creature.type))
         if spell is not None:
@@ -305,7 +305,7 @@ class Miner(Creature):
     def attack(self, creature):
         super().attack(creature)
         self.mine.screen.addstr(self.y, self.x, '!')
-        if random.randint(1,1000) == 1:
+        if random.randint(1,400) == 1:
             creature.die('was killed by a Miner')
             self.mine.push_message('Miner killed a {}'.format(creature.type))
 
