@@ -232,6 +232,7 @@ class Miner(Creature):
         self.push_action(ExploreAction())
         self.type = 'Miner'
         self.enemy_types.extend((Wizard, Saboteur))
+        self.friendly_types.append(Miner)
         self.define_character()
 
     def define_character(self):
