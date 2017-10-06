@@ -35,8 +35,7 @@ class MineGenerator():
         for i in range(random.randint(1, 10)):
             treasure = Treasure(random.randint(0, m.width - 1), random.randint(10, m.height - 1))
             m.add_item(treasure)
-
-        for i in range(random.randint(1, 10)):
-            map_item = Map(random.randint(0, m.width - 1), random.randint(5, m.height - 1))
+            map_item = Map(random.randint(0, m.width - 1), random.randint(5, m.height - 1), treasure)
             m.add_item(map_item)
+
         return m

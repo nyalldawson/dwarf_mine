@@ -3,7 +3,7 @@ from enchantments import Tricked
 from traits import Lazy, Sneaky, Determined
 from materials import Boulder
 from enchantments import SaboteurSpell, Firestarter, Frozen, SleepSpell
-from actions import ExploreAction, SleepAction, GoToAction, AttackAction, CallToArms
+from actions import ExploreAction, SleepAction, PickUpAction, AttackAction, CallToArms, SearchAction
 from allegiance import Allegiance
 
 class Creature:
@@ -142,12 +142,22 @@ class Creature:
         creature = self.mine.get_creature(x, y)
         if creature is not None and creature.is_visible() and self.allegiance_to(creature) == Allegiance.Hostile:
             self.target_attack_at(creature)
+        elif creature is not None and self.allegiance_to(creature) == Allegiance.Friendly:
+            self.met_friend(creature)
 
     def target_attack_at(self, creature):
         self.push_action(AttackAction(creature))
 
     def attack(self, creature):
         pass
+
+    def met_friend(self, creature):
+        for a in self.actions:
+            if isinstance(a, SearchAction):
+                if not [x for x in creature.actions if isinstance(x, SearchAction)]:
+                    creature.push_action(SearchAction(a.target, a.search_rect))
+#                    self.mine.push_message('miner told his friend')
+                    return
 
     def look(self):
         visible_cells = self.mine.get_visible_cells(self.x, self.y, self.view_distance)
@@ -288,12 +298,12 @@ class Miner(Creature):
             if item.is_attractive_to(self):
                 already_going_there = False
                 for a in self.actions:
-                    if isinstance(a, GoToAction):
-                        if a.x == x and a.y == y:
+                    if isinstance(a, PickUpAction):
+                        if a.item == item:
                             already_going_there = True
                             break
                 if not already_going_there:
-                    self.push_action(GoToAction(x, y))
+                    self.push_action(PickUpAction(item))
 
         super().look_at(x,y)
 
@@ -317,3 +327,5 @@ class Saboteur(Miner):
         self.color = (2,9)
         self.enchant(SaboteurSpell())
         self.type = 'Saboteur'
+        self.enemy_types = [Miner]
+        self.friendly_types = [Saboteur]

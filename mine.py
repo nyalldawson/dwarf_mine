@@ -82,6 +82,9 @@ class Mine:
     def set_visibility(self, x, y, visibility):
         self.visibility[y * self.width + x] = visibility
 
+    def is_visible(self, x, y):
+        return self.visibility[y*self.width + x]
+
     def is_empty(self, x, y):
         return isinstance(self.mine[y * self.width + x], Space)
 

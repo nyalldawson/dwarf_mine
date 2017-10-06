@@ -105,6 +105,18 @@ class GoToAction(Action):
         return
 
 
+class PickUpAction(GoToAction):
+    def __init__(self, item):
+        super().__init__(item.x, item.y)
+        self.item = item
+
+    def can_remove(self):
+        if self.item not in self.creature.mine.items:
+            return True
+        else:
+            return False
+
+
 class AttackAction(GoToAction):
     def __init__(self, target):
         super().__init__(target.x,target.y)
@@ -148,6 +160,35 @@ class AttackAction(GoToAction):
             return
 
         super().do()
+
+
+class SearchAction(GoToAction):
+
+    def __init__(self, target, search_rect):
+        super().__init__(*search_rect.center())
+        self.target = target
+        self.search_rect = search_rect
+        self.cells = []
+
+    def can_remove(self):
+        if self.target is not None and self.target not in self.creature.mine.items:
+            return True
+        else:
+            return False
+
+    def added_to_creature(self, creature):
+        super().added_to_creature(creature)
+        self.search_rect.remove_invalid(creature.mine)
+        self.cells = self.search_rect.get_cells()
+
+    def score_move(self,x,y):
+        return 1
+
+    def get_target_locations(self):
+        for c in self.cells:
+            if self.creature.mine.is_visible(c[0],c[1]):
+                self.cells.remove(c)
+        return self.cells
 
 
 class CallToArms(Action):
