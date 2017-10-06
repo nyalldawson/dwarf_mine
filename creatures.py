@@ -126,6 +126,11 @@ class Creature:
         pass
 
     def look_at(self, x, y):
+        creature = self.mine.get_creature(x, y)
+        if creature is not None and creature.is_visible() and self.allegiance_to(creature) == Allegiance.Hostile:
+            self.attack(creature)
+
+    def attack(self, creature):
         pass
 
     def look(self):
@@ -173,32 +178,30 @@ class Wizard(Creature):
         super().move()
         self.look()
 
-    def look_at(self, x, y):
-        creature = self.mine.get_creature(x, y)
-        if creature is not None and creature.is_visible() and self.allegiance_to(creature) == Allegiance.Hostile:
-            seed = random.randint(1,1300)
-            spell = None
-            if seed < 50:
-                spell = Tricked()
-                self.mine.push_feedback('Wizard cast a trick on a {}!'.format(creature.type))
-            elif seed < 80:
-                spell = Firestarter()
-                self.mine.push_feedback('Wizard cast Firestarter on a {}!'.format(creature.type))
-            elif seed < 130:
-                spell = Frozen()
-                self.mine.push_feedback('Wizard cast Freeze on a {}!'.format(creature.type))
-            elif seed < 160:
-                spell = SleepSpell()
-                self.mine.push_feedback('Wizard cast Sleep on a {}!'.format(creature.type))
-            if spell is not None:
-                def remove_allegiance(spell,creature):
-                    creature.friends.remove(self)
-                    self.friends.remove(creature)
+    def attack(self, creature):
+        seed = random.randint(1,1300)
+        spell = None
+        if seed < 50:
+            spell = Tricked()
+            self.mine.push_feedback('Wizard cast a trick on a {}!'.format(creature.type))
+        elif seed < 80:
+            spell = Firestarter()
+            self.mine.push_feedback('Wizard cast Firestarter on a {}!'.format(creature.type))
+        elif seed < 130:
+            spell = Frozen()
+            self.mine.push_feedback('Wizard cast Freeze on a {}!'.format(creature.type))
+        elif seed < 160:
+            spell = SleepSpell()
+            self.mine.push_feedback('Wizard cast Sleep on a {}!'.format(creature.type))
+        if spell is not None:
+            def remove_allegiance(spell,creature):
+                creature.friends.remove(self)
+                self.friends.remove(creature)
 
-                spell.add_removal_callback(remove_allegiance)
-                creature.enchant(spell)
-                creature.friends.append(self)
-                self.friends.append(creature)
+            spell.add_removal_callback(remove_allegiance)
+            creature.enchant(spell)
+            creature.friends.append(self)
+            self.friends.append(creature)
 
 
 class Miner(Creature):
@@ -279,6 +282,8 @@ class Miner(Creature):
                             break
                 if not already_going_there:
                     self.push_action(GoToAction(x, y))
+
+        super().look_at(x,y)
 
 
 class Saboteur(Miner):
