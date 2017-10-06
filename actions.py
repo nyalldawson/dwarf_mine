@@ -1,5 +1,7 @@
 import random
 from materials import Space
+from allegiance import Allegiance
+from utils import Utils
 
 
 class Action:
@@ -37,16 +39,49 @@ class GoToAction(Action):
         self.x = x
         self.y = y
 
-    def do(self):
-        if self.creature.x == self.x and self.creature.y == self.y:
-            self.creature.remove_action(self)
+    def get_target_locations(self):
+        return [(self.x,self.y)]
 
-        new_x = self.creature.x
-        new_y = self.creature.y
-        if self.creature.x < self.x:
-            new_x += 1
-        elif self.creature.x > self.x:
-            new_x -= 1
+    def can_remove(self):
+        if self.creature.x == self.x and self.creature.y == self.y:
+            return True
+        else:
+            return False
+
+    def score_move(self,x,y):
+        #less is better
+        return Utils.exact_distance(self.x, self.y, x, y)
+
+    def do(self):
+        if self.can_remove():
+            self.creature.remove_action(self)
+            return
+
+        valid_locations = []
+        target_locations = self.get_target_locations()
+        if len(target_locations) == 0:
+            return
+        for t in target_locations:
+            if self.creature.x != t[0]:
+                if self.creature.x < t[0]:
+                    valid_locations.append((self.creature.x+1,self.creature.y))
+                else:
+                    valid_locations.append((self.creature.x-1,self.creature.y))
+
+            if self.creature.y != t[1]:
+                if self.creature.y < t[1]:
+                    valid_locations.append((self.creature.x,self.creature.y+1))
+                else:
+                    valid_locations.append((self.creature.x,self.creature.y-1))
+
+            if self.creature.x != t[0]:
+                valid_locations.extend([(self.creature.x, self.creature.y-1),
+                                        (self.creature.x, self.creature.y + 1)])
+            if self.creature.y != t[1]:
+                valid_locations.extend([(self.creature.x - 1, self.creature.y),
+                                    (self.creature.x + 1, self.creature.y)])
+
+        valid_locations.sort(key=lambda x: self.score_move(x[0],x[1]))
 
         def try_to_move_to(x, y):
             if not self.creature.mine.is_valid_location(x, y):
@@ -63,20 +98,12 @@ class GoToAction(Action):
             else:
                 return False
 
-        if not new_x == self.creature.x:
-            if try_to_move_to(new_x, new_y):
+        for location in valid_locations:
+            if try_to_move_to(location[0], location[1]):
                 return
-            else:
-                new_x = self.creature.x
 
-        if self.creature.y < self.y:
-            new_y += 1
-        elif self.creature.y > self.y:
-            new_y -= 1
+        return
 
-        if not new_y == self.creature.y:
-            if try_to_move_to(new_x, new_y):
-                return
 
         return
 

@@ -7,6 +7,10 @@ class Utils:
         return math.ceil(math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)))
 
     @staticmethod
+    def exact_distance(x1, y1, x2, y2):
+        return math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
+
+    @staticmethod
     def line_between(x1, y1, x2, y2):
         dx = x2 - x1
         dy = y2 - y1
