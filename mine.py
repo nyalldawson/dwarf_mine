@@ -204,5 +204,9 @@ class Mine:
                 self.stats.show()
             elif c == 113:
                 sys.exit()
+            elif c == 100:
+                for i in range(5):
+                    miner = Miner(random.randint(0, self.width - 1), 0)
+                    self.add_creature(miner)
             else:
                 self.push_feedback(str(c))
