@@ -91,7 +91,7 @@ class GoToAction(Action):
             elif self.creature.mine.is_empty(x, y):
                 self.creature.move_to(x, y)
                 return True
-            elif self.creature.decided_to_dig(x, y):
+            elif self.creature.can_dig() and self.creature.decided_to_dig(x, y):
                 self.creature.move_to(x, y)
                 self.creature.mine.set_material(x, y, Space())
                 return True

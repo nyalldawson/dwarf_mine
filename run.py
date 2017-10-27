@@ -31,6 +31,7 @@ if __name__ == '__main__':
     parser.add_argument("-l", "--lights", help="shows all grid cells, not just explored ones", action="store_true")
     parser.add_argument("--miners", help="how many miners to add", type=int)
     parser.add_argument("--wizards", help="how many wizards to add", type=int)
+    parser.add_argument("--snakes", help="how many snakes to add", type=int)
     args = parser.parse_args()
     if args.show_colors:
         curses.wrapper(show_colors)

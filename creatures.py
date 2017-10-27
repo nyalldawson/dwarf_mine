@@ -24,7 +24,9 @@ class Creature:
         self.enemies = []
         self.enemy_types = []
         self.alive = True
+        self.able_to_dig = False
         self.die_callbacks = []
+        self.health=200
 
     def place_in_mine(self, mine):
         self.mine = mine
@@ -77,6 +79,13 @@ class Creature:
         item.found_by(self)
         self.mine.stats.item_collected(self, item)
 
+    def hit(self, damage, message):
+        self.health -= damage
+        if self.health <= 0:
+            self.die(message)
+            if isinstance(self, Miner):
+                self.mine.push_message('Miner ' + message)
+
     def die(self, message):
         self.mine.stats.creature_died(self,message)
         self.mine.remove_creature(self)
@@ -108,6 +117,12 @@ class Creature:
             if m.x == x and m.y == y:
                 return False
         return True
+
+    def can_dig(self):
+        return self.able_to_dig
+
+    def decided_to_dig(self, x, y):
+        return self.can_dig()
 
     def move(self):
         for e in self.enchantments:
@@ -190,6 +205,35 @@ class Creature:
             return Allegiance.Neutral
 
 
+class Snake(Creature):
+
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.color = (23,8)
+        self.view_distance = 4
+        self.type = 'Snake'
+        self.char = 'S'
+        self.health=10
+        self.enemy_types.append(Miner)
+        self.enemy_types.append(Wizard)
+        self.enemy_types.append(Saboteur)
+
+    def place_in_mine(self, mine):
+        super().place_in_mine(mine)
+        hole_size = 2
+        mine.create_cave(self.x, self.y, hole_size)
+
+    def move(self):
+        super().move()
+        self.look()
+
+    def attack(self, creature):
+        super().attack(creature)
+        self.mine.screen.addstr(self.y, self.x, '!')
+        damage = random.randint(1,50)
+        creature.hit(damage,'was killed by a {}'.format(self.type))
+
+
 class Wizard(Creature):
     def __init__(self, x, y):
         super().__init__(x, y)
@@ -197,6 +241,7 @@ class Wizard(Creature):
         self.view_distance = 5
         self.type = 'Wizard'
         self.enemy_types.append(Miner)
+        self.enemy_types.append(Snake)
 
     def place_in_mine(self, mine):
         super().place_in_mine(mine)
@@ -244,9 +289,10 @@ class Miner(Creature):
         self.view_distance = 5
         self.push_action(ExploreAction())
         self.type = 'Miner'
-        self.enemy_types.extend((Wizard, Saboteur))
+        self.enemy_types.extend((Wizard, Saboteur, Snake))
         self.friendly_types.append(Miner)
         self.define_character()
+        self.able_to_dig = True
 
     def define_character(self):
         if random.randint(1, 30) == 1:
@@ -318,8 +364,9 @@ class Miner(Creature):
     def attack(self, creature):
         super().attack(creature)
         self.mine.screen.addstr(self.y, self.x, '!')
-        if random.randint(1,400) == 1:
-            creature.die('was killed by a {}'.format(self.type))
+        damage = random.randint(1,5)
+        creature.hit(damage,'was killed by a {}'.format(self.type))
+        if not creature.alive:
             self.mine.push_message('{} killed a {}'.format(self.type, creature.type))
 
 

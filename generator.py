@@ -1,6 +1,6 @@
 import random
 import math
-from creatures import Miner,Saboteur,Wizard
+from creatures import Miner,Saboteur,Wizard,Snake
 from mine import Mine
 from items import Treasure, Map
 
@@ -32,6 +32,11 @@ class MineGenerator():
         for i in range(wizard_count):
             wizard = Wizard(random.randint(0, m.width - 1), random.randint(math.ceil(m.height/3), m.height - 1))
             m.add_creature(wizard)
+
+        snake_count = int(self.args.snakes) if self.args.snakes is not None else random.randint(1, 5)
+        for i in range(snake_count):
+            snake = Snake(random.randint(0, m.width - 1), random.randint(math.ceil(m.height/5), m.height - 1))
+            m.add_creature(snake)
 
         for i in range(random.randint(1, 10)):
             treasure = Treasure(random.randint(0, m.width - 1), random.randint(10, m.height - 1))
