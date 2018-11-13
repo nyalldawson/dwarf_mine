@@ -158,4 +158,3 @@ class SleepSpell(Enchantment):
         self.creature.push_action(self.sleep_action)
         self.time=self.sleep_action.duration
 
-

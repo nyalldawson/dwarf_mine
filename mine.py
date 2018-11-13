@@ -6,7 +6,7 @@ from message_box import MessageBox
 from materials import Lava, Dirt, Space, Water
 from utils import Utils
 from items import Treasure
-from creatures import Miner, Saboteur
+from creatures import Miner, Saboteur, DwarfKing
 from stats import Stats
 
 class Mine:
@@ -172,6 +172,11 @@ class Mine:
 
         if len([c for c in self.creatures if isinstance(c, Miner) and not isinstance(c, Saboteur)]) == 0:
             self.push_message('All dwarves died\n\nYou lose!')
+            self.stats.show()
+            sys.exit()
+
+        if len([c for c in self.creatures if isinstance(c, DwarfKing)]) == 0:
+            self.push_message('The Dwarf King died\n\nYou lose!')
             self.stats.show()
             sys.exit()
 

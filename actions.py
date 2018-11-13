@@ -331,3 +331,30 @@ class ExploreAction(Action):
                 self.frustration = 0
             else:
                 self.frustration += 1
+
+
+class FollowAction(ExploreAction):
+    def __init__(self, target):
+        super().__init__()
+        self.target = target
+
+    def can_remove(self):
+        if not self.target.alive:
+            return True
+        else:
+            return False
+
+    def think_about_changing_vertical_direction(self):
+        return
+
+    def think_about_changing_horizontal_direction(self):
+        return
+
+    def do(self):
+        self.x_dir = 1 if self.target.x > self.creature.x else -1
+        self.y_dir = 1 if self.target.y > self.creature.y else -1
+
+        if self.can_remove():
+            self.creature.remove_action(self)
+            return
+        super().do()

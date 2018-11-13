@@ -1,9 +1,9 @@
 import random
 from enchantments import Tricked
-from traits import Lazy, Sneaky, Determined
+from traits import Lazy, Sneaky, Determined, Contagious, Leader
 from materials import Boulder
 from enchantments import SaboteurSpell, Firestarter, Frozen, SleepSpell
-from actions import ExploreAction, SleepAction, PickUpAction, AttackAction, CallToArms, SearchAction
+from actions import ExploreAction, SleepAction, PickUpAction, AttackAction, CallToArms, SearchAction, FollowAction
 from allegiance import Allegiance
 
 class Creature:
@@ -67,6 +67,12 @@ class Creature:
                 return True
         return False
 
+    def get_matching_trait(self, trait):
+        for t in self.traits:
+            if isinstance(t, trait):
+                return t
+        return None
+
     def remove_trait(self, trait):
         try:
             self.traits.remove(trait)
@@ -93,6 +99,13 @@ class Creature:
         self.alive = False
         for c in self.die_callbacks:
             c(self)
+
+    def replace_with(self, new_creature):
+        self.mine.remove_creature(self)
+        new_creature.x = self.x
+        new_creature.y = self.y
+        self.mine.add_creature(new_creature)
+        self.mine.push_feedback('A {} was turned into a {}!'.format(self.type, new_creature.type))
 
     def push_die_callback(self, callback):
         self.die_callbacks.append(callback)
@@ -177,6 +190,12 @@ class Creature:
 #                    self.mine.push_message('miner told his friend')
                     return
 
+        for t in self.traits:
+            if isinstance(t, Leader):
+                creature.push_action(FollowAction(self))
+                creature.add_trait(Determined())
+
+
     def look(self):
         visible_cells = self.mine.get_visible_cells(self.x, self.y, self.view_distance)
         for c in visible_cells:
@@ -207,7 +226,7 @@ class Creature:
 
 class Snake(Creature):
 
-    def __init__(self, x, y):
+    def __init__(self, x=-1, y=-1, can_be_contagious=True):
         super().__init__(x, y)
         self.color = (23,8)
         self.view_distance = 4
@@ -217,6 +236,12 @@ class Snake(Creature):
         self.enemy_types.append(Miner)
         self.enemy_types.append(Wizard)
         self.enemy_types.append(Saboteur)
+        self.enemy_types.append(Saboteur)
+
+        if can_be_contagious and random.randint(1, 10) == 1:
+            self.add_trait(Contagious())
+            self.health=200
+            self.color = (47,8)
 
     def place_in_mine(self, mine):
         super().place_in_mine(mine)
@@ -230,8 +255,13 @@ class Snake(Creature):
     def attack(self, creature):
         super().attack(creature)
         self.mine.screen.addstr(self.y, self.x, '!')
-        damage = random.randint(1,50)
-        creature.hit(damage,'was killed by a {}'.format(self.type))
+        if self.has_trait(Contagious):
+            if random.randint(1,10)==1:
+                new_snake = Snake(can_be_contagious=False)
+                creature.replace_with(new_snake)
+        else:
+            damage = random.randint(1,50)
+            creature.hit(damage,'was killed by a {}'.format(self.type))
 
 
 class Wizard(Creature):
@@ -305,7 +335,8 @@ class Miner(Creature):
         mine.set_visibility(self.x, self.y, True)
 
     def decided_to_dig(self, x, y):
-        if self.has_trait(Determined) and random.randint(1, 2) == 1:
+        d = self.get_matching_trait(Determined)
+        if d is not None and random.randint(1, d.level) == 1:
             return True
 
         if self.has_enchantment(Tricked):
@@ -368,6 +399,17 @@ class Miner(Creature):
         creature.hit(damage,'was killed by a {}'.format(self.type))
         if not creature.alive:
             self.mine.push_message('{} killed a {}'.format(self.type, creature.type))
+
+
+class DwarfKing(Miner):
+
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.char = '☺'
+        self.color = (221,9)
+        self.type = 'Dwarf King'
+        self.add_trait(Determined(level=4))
+        self.add_trait(Leader())
 
 
 class Saboteur(Miner):

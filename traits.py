@@ -19,9 +19,10 @@ class Determined(Trait):
     """
     Creature is determined, and more likely to succeed or die trying
     """
-    def __init__(self):
+    def __init__(self, level = 2):
         Trait.__init__(self)
         self.type = 'determined'
+        self.level = level
 
 
 class Lazy(Trait):
@@ -45,3 +46,24 @@ class Sneaky(Trait):
         if random.randint(1,10) < 9:
             return False
         return visible
+
+
+class Contagious(Trait):
+    """
+    Creature is contagious - the exact meaning of this depends on the
+    creature
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.type = 'contagious'
+
+
+class Leader(Trait):
+    """
+    Creature is a leader - other creatures like to follow them!
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.type = 'leader'

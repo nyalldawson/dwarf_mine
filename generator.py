@@ -1,6 +1,6 @@
 import random
 import math
-from creatures import Miner,Saboteur,Wizard,Snake
+from creatures import Miner,Saboteur,Wizard,Snake,DwarfKing
 from mine import Mine
 from items import Treasure, Map
 
@@ -43,5 +43,10 @@ class MineGenerator():
             m.add_item(treasure)
             map_item = Map(random.randint(0, m.width - 1), random.randint(5, m.height - 1), treasure)
             m.add_item(map_item)
+
+        king_count = int(self.args.kings) if self.args.kings is not None else 1
+        for i in range(king_count):
+            king = DwarfKing(random.randint(0, m.width - 1), 0)
+            m.add_creature(king)
 
         return m
