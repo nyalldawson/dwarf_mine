@@ -29,6 +29,7 @@ class Creature:
         self.die_callbacks = []
         self.health = 200
         self.knowledge = []
+        self.tribe = None
 
     def place_in_mine(self, mine):
         self.mine = mine
@@ -51,6 +52,9 @@ class Creature:
             if c is not None:
                 colors.append(c)
         return max(colors, key=lambda x: x[1])[0]
+
+    def get_tribe(self):
+        return self.tribe
 
     def push_action(self, action):
         # TODO - avoid duplicate actions
@@ -98,8 +102,8 @@ class Creature:
         self.health -= damage
         if self.health <= 0:
             self.die(message)
-            if isinstance(self, Miner):
-                self.mine.push_message('Miner ' + message)
+            if isinstance(self, DwarfKing):
+                self.mine.push_message(self.tribe.name + ' King ' + message)
 
     def die(self, message):
         self.mine.stats.creature_died(self,message)
@@ -222,10 +226,18 @@ class Creature:
 #                    self.mine.push_message('miner told his friend')
                     return
 
-        for t in self.traits:
+
+        # leaders never follow leaders
+        creature_is_leader = False
+        for t in creature.traits:
             if isinstance(t, Leader):
-                creature.push_action(FollowAction(self))
-                creature.add_trait(Determined())
+                creature_is_leader = True
+
+        if not creature_is_leader:
+            for t in self.traits:
+                if isinstance(t, Leader):
+                    creature.push_action(FollowAction(self))
+                    creature.add_trait(Determined())
 
     def look(self):
         visible_cells = self.mine.get_visible_cells(self.x, self.y, self.view_distance)
@@ -251,6 +263,8 @@ class Creature:
             return Allegiance.Friendly
         elif creature.__class__ in self.enemy_types:
             return Allegiance.Hostile
+        elif self.get_tribe() and creature.get_tribe():
+            return self.get_tribe().allegiance_to(creature.get_tribe())
         else:
             return Allegiance.Neutral
 
@@ -355,7 +369,7 @@ class Miner(Creature):
         self.push_action(ExploreAction())
         self.type = 'Miner'
         self.enemy_types.extend((Wizard, Saboteur, Snake))
-        self.friendly_types.append(Miner)
+        #self.friendly_types.append(Miner)
         self.define_character()
         self.able_to_dig = True
 
@@ -435,15 +449,15 @@ class Miner(Creature):
         self.mine.screen.addstr(self.y, self.x, '!')
         damage = random.randint(1,5)
         creature.hit(damage,'was killed by a {}'.format(self.type))
-        if not creature.alive:
-            self.mine.push_message('{} killed a {}'.format(self.type, creature.type))
+        if not creature.alive and isinstance(creature, DwarfKing):
+            self.mine.push_message('{} killed a {} {}'.format(self.type, creature.tribe.name, creature.type))
 
 
 class DwarfKing(Miner):
 
     def __init__(self, x, y, tribe=None):
         super().__init__(x, y, tribe=tribe)
-        self.char = '☺'
+        self.char = '☻'
         self.color = (221,9)
         self.type = 'Dwarf King'
         self.add_trait(Determined(level=4))

@@ -22,6 +22,7 @@ class Mine:
         self.colors = []
         self.creatures = []
         self.items = []
+        self.tribes = []
         self.dark = True
         self.build_mine()
 

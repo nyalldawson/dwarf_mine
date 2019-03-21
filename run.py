@@ -8,6 +8,7 @@ def main(screen, args):
     curses.start_color()
     curses.use_default_colors()
     curses.curs_set(0)
+
     screen.nodelay(1)
 
     for i in range(0, curses.COLORS):
@@ -16,7 +17,7 @@ def main(screen, args):
     height, width = screen.getmaxyx()
 
     g = MineGenerator(width - 1, height - 1, args)
-    m = g.build_mine(screen)
+    m = g.build_mine(screen, curses)
 
     if args.lights:
         m.dark = False
@@ -34,6 +35,7 @@ if __name__ == '__main__':
     parser.add_argument("--wizards", help="how many wizards to add", type=int)
     parser.add_argument("--snakes", help="how many snakes to add", type=int)
     parser.add_argument("--tribes", help="how many opposing dwarf tribes", type=int, default=2)
+    parser.add_argument("--saboteurs", help="how many saboteurs to add", type=int)
     args = parser.parse_args()
     if args.show_colors:
         curses.wrapper(show_colors)

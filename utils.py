@@ -32,7 +32,7 @@ def show_colors(screen):
 
     x = 0
     y = 0
-    for i in range(1000):
+    for i in range(curses.COLORS):
         x += 4
         if x > 180:
             y += 1

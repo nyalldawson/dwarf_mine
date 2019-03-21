@@ -38,7 +38,7 @@ class Treasure(Item):
     def found_by(self, creature):
         if self.spell is not None:
             creature.enchant(self.spell)
-        creature.mine.push_message('{} found a {}!'.format(creature.type, self.type))
+        creature.mine.push_message('{} {} found a {}!'.format(creature.tribe.name, creature.type, self.type))
 
 
 class Map(Item):
@@ -67,6 +67,6 @@ class Map(Item):
     def found_by(self, creature):
         if self.target in self.mine.items:
             # target item still exists
-            self.mine.push_message('{} found a map for a {}!'.format(creature.type, self.target.type))
+            self.mine.push_message('{} {} found a map for a {}!'.format(creature.get_tribe().name, creature.type, self.target.type))
             creature.push_action(SearchAction(self.target,self.search_area))
 
