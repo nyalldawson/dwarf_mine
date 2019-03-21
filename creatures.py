@@ -1,8 +1,9 @@
 import random
+from copy import deepcopy
 from enchantments import Tricked
 from traits import Lazy, Sneaky, Determined, Contagious, Leader
 from materials import Boulder
-from enchantments import SaboteurSpell, Firestarter, Frozen, SleepSpell
+from enchantments import Enchantment, SaboteurSpell, Firestarter, Frozen, SleepSpell
 from actions import ExploreAction, SleepAction, PickUpAction, AttackAction, CallToArms, SearchAction, FollowAction
 from allegiance import Allegiance
 
@@ -26,7 +27,8 @@ class Creature:
         self.alive = True
         self.able_to_dig = False
         self.die_callbacks = []
-        self.health=200
+        self.health = 200
+        self.knowledge = []
 
     def place_in_mine(self, mine):
         self.mine = mine
@@ -51,6 +53,10 @@ class Creature:
         return max(colors, key=lambda x: x[1])[0]
 
     def push_action(self, action):
+        # TODO - avoid duplicate actions
+        #assert action not in self.actions
+        #if len(self.actions) > 10:
+        #    assert False,self.actions
         self.actions.insert(0, action)
         action.added_to_creature(self)
 
@@ -78,6 +84,9 @@ class Creature:
             self.traits.remove(trait)
         except:  # ValueError:
             pass
+
+    def learn(self, skill):
+        self.knowledge.append(skill)
 
     def add_item(self, item):
         self.items.append(item)
@@ -173,6 +182,29 @@ class Creature:
         elif creature is not None and self.allegiance_to(creature) == Allegiance.Friendly:
             self.met_friend(creature)
 
+    def attack_with_spell(self, creature):
+        spell = self.choose_spell_to_attack_with(creature)
+        if spell and spell.try_cast():
+            s = deepcopy(spell)
+
+            def remove_allegiance(spell, creature):
+                try:
+                    creature.friends.remove(self)
+                except ValueError:
+                    pass
+                try:
+                    self.friends.remove(creature)
+                except ValueError:
+                    pass
+
+            spell.add_removal_callback(remove_allegiance)
+            creature.enchant(s)
+            creature.friends.append(self)
+            self.friends.append(creature)
+            return True
+
+        return False
+
     def target_attack_at(self, creature):
         self.push_action(AttackAction(creature))
 
@@ -194,7 +226,6 @@ class Creature:
             if isinstance(t, Leader):
                 creature.push_action(FollowAction(self))
                 creature.add_trait(Determined())
-
 
     def look(self):
         visible_cells = self.mine.get_visible_cells(self.x, self.y, self.view_distance)
@@ -222,6 +253,16 @@ class Creature:
             return Allegiance.Hostile
         else:
             return Allegiance.Neutral
+
+    def learnt_offensive_spells(self):
+        return [s for s in self.knowledge if issubclass(s.__class__, Enchantment) and s.is_offensive()]
+
+    def choose_spell_to_attack_with(self, creature):
+        choices = self.learnt_offensive_spells()
+        if choices:
+            return random.choice(choices)
+
+        return None
 
 
 class Snake(Creature):
@@ -273,6 +314,12 @@ class Wizard(Creature):
         self.enemy_types.append(Miner)
         self.enemy_types.append(Snake)
 
+        # initial spells
+        self.learn(Tricked())
+        self.learn(Firestarter())
+        self.learn(Frozen())
+        self.learn(SleepSpell())
+
     def place_in_mine(self, mine):
         super().place_in_mine(mine)
         hole_size = random.randint(2, 6)
@@ -286,29 +333,14 @@ class Wizard(Creature):
         return False
 
     def target_attack_at(self, creature):
-        seed = random.randint(1,1300)
-        spell = None
-        if seed < 10:
-            spell = Tricked()
-            self.mine.push_feedback('Wizard cast a trick on a {}!'.format(creature.type))
-        elif seed < 15:
-            spell = Firestarter()
-            self.mine.push_feedback('Wizard cast Firestarter on a {}!'.format(creature.type))
-        elif seed < 25:
-            spell = Frozen()
-            self.mine.push_feedback('Wizard cast Freeze on a {}!'.format(creature.type))
-        elif seed < 35:
-            spell = SleepSpell()
-            self.mine.push_feedback('Wizard cast Sleep on a {}!'.format(creature.type))
-        if spell is not None:
-            def remove_allegiance(spell,creature):
-                creature.friends.remove(self)
-                self.friends.remove(creature)
+        self.attack_with_spell(creature)
 
-            spell.add_removal_callback(remove_allegiance)
-            creature.enchant(spell)
-            creature.friends.append(self)
-            self.friends.append(creature)
+    def die(self, message):
+        super().die(message)
+
+        from book_of_spells import BookOfSpells
+
+        self.mine.add_item(BookOfSpells(self.x, self.y))
 
 
 class Miner(Creature):
@@ -388,6 +420,9 @@ class Miner(Creature):
         super().look_at(x,y)
 
     def target_attack_at(self, creature):
+        if self.learnt_offensive_spells():
+            self.attack_with_spell(creature)
+
         super().target_attack_at(creature)
         self.mine.push_feedback("Help! There's a {} over here!".format(creature.type))
         self.push_action(CallToArms(creature))

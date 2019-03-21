@@ -1,30 +1,10 @@
 import random
+from item import Item
 from enchantments import DeterminationSpell, Invisibility
 from actions import SearchAction
 from creatures import Miner
 from utils import Rect
 import math
-
-class Item:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.char = 'X'
-        self.color = 1
-        self.mine = None
-        self.type = 'thing'
-
-    def add_to_mine(self, mine):
-        self.mine = mine
-
-    def is_attractive_to(self, creature):
-        return False
-
-    def found_by(self, creature):
-        pass
-
-    def alter_color(self):
-        return None
 
 
 class Treasure(Item):
@@ -89,3 +69,4 @@ class Map(Item):
             # target item still exists
             self.mine.push_message('{} found a map for a {}!'.format(creature.type, self.target.type))
             creature.push_action(SearchAction(self.target,self.search_area))
+
