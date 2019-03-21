@@ -344,8 +344,11 @@ class Wizard(Creature):
 
 
 class Miner(Creature):
-    def __init__(self, x, y):
+    def __init__(self, x, y, tribe=None):
         super().__init__(x, y)
+        self.tribe = tribe
+        if self.tribe is not None:
+            self.color = tribe.color
         self.likes_to_go_vertical = random.randint(10, 20)
         self.likes_to_go_horizontal = random.randint(10, 20)
         self.view_distance = 5
@@ -438,8 +441,8 @@ class Miner(Creature):
 
 class DwarfKing(Miner):
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
+    def __init__(self, x, y, tribe=None):
+        super().__init__(x, y, tribe=tribe)
         self.char = '☺'
         self.color = (221,9)
         self.type = 'Dwarf King'

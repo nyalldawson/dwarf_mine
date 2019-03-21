@@ -33,6 +33,7 @@ if __name__ == '__main__':
     parser.add_argument("--kings", help="how many dwarf kings to add", type=int, default=1)
     parser.add_argument("--wizards", help="how many wizards to add", type=int)
     parser.add_argument("--snakes", help="how many snakes to add", type=int)
+    parser.add_argument("--tribes", help="how many opposing dwarf tribes", type=int, default=2)
     args = parser.parse_args()
     if args.show_colors:
         curses.wrapper(show_colors)

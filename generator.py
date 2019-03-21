@@ -2,6 +2,7 @@ import random
 import math
 from creatures import Miner,Saboteur,Wizard,Snake,DwarfKing
 from mine import Mine
+from tribe import Tribe
 from items import Treasure, Map
 
 class MineGenerator():
@@ -15,9 +16,21 @@ class MineGenerator():
 
         m = Mine(screen, self.width, self.height)
 
+        tribes = []
+        tribe_width = m.width / (self.args.tribes * 2 - 1)
+        for t in range(self.args.tribes):
+            new_tribe = Tribe(id=t)
+            new_tribe.min_x = tribe_width * new_tribe.id * 2
+            new_tribe.max_x = tribe_width * (new_tribe.id*2+1)-1
+            tribes.append(new_tribe)
+
         miner_count = int(self.args.miners) if self.args.miners is not None else random.randint(1, 200)
         for i in range(miner_count):
-            miner = Miner(random.randint(0, m.width - 1), 0)
+            tribe = random.choice(tribes)
+
+            x = random.randint(tribe.min_x, tribe.max_x)
+
+            miner = Miner(x, 0, tribe=tribe)
             m.add_creature(miner)
 
         for i in range(random.randint(4, 10)):
@@ -44,9 +57,12 @@ class MineGenerator():
             map_item = Map(random.randint(0, m.width - 1), random.randint(5, m.height - 1), treasure)
             m.add_item(map_item)
 
-        king_count = int(self.args.kings) if self.args.kings is not None else 1
-        for i in range(king_count):
-            king = DwarfKing(random.randint(0, m.width - 1), 0)
-            m.add_creature(king)
+        for t in tribes:
+            king_count = int(self.args.kings) if self.args.kings is not None else 1
+            for i in range(king_count):
+                x = random.randint(t.min_x, t.max_x)
+
+                king = DwarfKing(x, 0, t)
+                m.add_creature(king)
 
         return m
