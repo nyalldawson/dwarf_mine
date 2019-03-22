@@ -7,9 +7,13 @@ from utils import Utils
 class Action:
     def __init__(self):
         self.creature = None
+        self.blocks_looking = False
 
     def added_to_creature(self, creature):
         self.creature = creature
+
+    def removed_from_creature(self, creature):
+        pass
 
     def do(self):
         pass
@@ -20,16 +24,35 @@ class SleepAction(Action):
         Action.__init__(self)
         self.duration = random.randint(100, 300)
         self.original_char = None
+        self.blocks_looking = True
 
     def added_to_creature(self, creature):
-        Action.added_to_creature(self, creature)
+        super().added_to_creature(creature)
         self.original_char = creature.char
         creature.char = 'Z'
+
+        # creatures forget all other actions when they sleep
+        creature.actions = [self]
+
+    def remove_other_actions(self, creature):
+        for a in creature.actions:
+            if a == self:
+                continue
+            creature.remove_action(a)
+
+    def removed_from_creature(self, creature):
+        super().removed_from_creature(creature)
+        creature.char = self.original_char
+
+        # creatures forget all other actions when they wake and go back to default action
+        creature.actions = [self]
+        d = creature.default_action()
+        if d is not None:
+            creature.push_action(d)
 
     def do(self):
         self.duration -= 1
         if self.duration == 0:
-            self.creature.char = self.original_char
             self.creature.remove_action(self)
 
 

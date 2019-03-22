@@ -10,6 +10,7 @@ class Enchantment:
         self.time = None
         self.removal_callbacks = []
         self.type = ''
+        self.blocks_looking = False
 
     def place_on_creature(self, creature):
         self.creature = creature

@@ -31,9 +31,16 @@ class Creature:
         self.knowledge = []
         self.tribe = None
 
+        d = self.default_action()
+        if d is not None:
+            self.push_action(d)
+
     def place_in_mine(self, mine):
         self.mine = mine
         self.look()
+
+    def default_action(self):
+        return None
 
     def get_char(self):
         c = self.char
@@ -66,6 +73,7 @@ class Creature:
 
     def remove_action(self, action):
         if action in self.actions:
+            action.removed_from_creature(self)
             self.actions.remove(action)
 
     def add_trait(self, trait):
@@ -149,6 +157,17 @@ class Creature:
 
     def decided_to_dig(self, x, y):
         return self.can_dig()
+
+    def can_look(self):
+        for a in self.actions:
+            if a.blocks_looking:
+                return False
+
+        for e in self.enchantments:
+            if e.blocks_looking:
+                return False
+
+        return True
 
     def move(self):
         for e in self.enchantments:
@@ -240,6 +259,9 @@ class Creature:
                     creature.add_trait(Determined())
 
     def look(self):
+        if not self.can_look():
+            return
+
         visible_cells = self.mine.get_visible_cells(self.x, self.y, self.view_distance)
         for c in visible_cells:
             if self.x == c[0] and self.y == c[1]:
@@ -366,12 +388,14 @@ class Miner(Creature):
         self.likes_to_go_vertical = random.randint(10, 20)
         self.likes_to_go_horizontal = random.randint(10, 20)
         self.view_distance = 5
-        self.push_action(ExploreAction())
         self.type = 'Miner'
         self.enemy_types.extend((Wizard, Saboteur, Snake))
         #self.friendly_types.append(Miner)
         self.define_character()
         self.able_to_dig = True
+
+    def default_action(self):
+        return ExploreAction()
 
     def define_character(self):
         if random.randint(1, 30) == 1:
@@ -405,7 +429,8 @@ class Miner(Creature):
                 self.mine.set_material(x, y, Boulder())
 
     def move(self):
-        if random.randint(1, 1000) <= (10 if self.has_trait(Lazy) else 1):
+        already_asleep = [a for a in self.actions if isinstance(a, SleepAction)]
+        if not already_asleep and random.randint(1, 1000) <= (10 if self.has_trait(Lazy) else 1):
             self.push_action(SleepAction())
 
         super().move()
