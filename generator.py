@@ -19,9 +19,9 @@ class MineGenerator():
         self.height = height
         self.args = args
 
-    def build_mine(self, screen, curses):
+    def build_mine(self, screen, pad):
 
-        m = Mine(screen, self.width, self.height)
+        m = Mine(screen, pad, self.width, self.height)
 
         tribe_width = int(m.width / (self.args.tribes * 2 - 1))
         for t in range(self.args.tribes):

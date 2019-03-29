@@ -11,13 +11,15 @@ def main(screen, args):
 
     screen.nodelay(1)
 
+    height, width = screen.getmaxyx()
+    width *= 3
+    height *= 2
+
     for i in range(0, curses.COLORS):
         curses.init_pair(i + 1, i, 16)
-
-    height, width = screen.getmaxyx()
-
+    pad = curses.newpad(height,width)
     g = MineGenerator(width - 1, height - 1, args)
-    m = g.build_mine(screen, curses)
+    m = g.build_mine(screen, pad)
 
     if args.lights:
         m.dark = False

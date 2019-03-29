@@ -10,13 +10,16 @@ from creatures import Miner, Saboteur, DwarfKing
 from stats import Stats
 
 class Mine:
-    def __init__(self, screen, width, height):
+    def __init__(self, screen, pad, width, height):
         self.screen = screen
-        self.pad = curses.newpad(width+10, height+10)
+        self.pad = pad
         self.stats = Stats(screen, self)
-        self.width = width
+        self.width = width - 1
         self.height = height - 1
-        self.feedback_line = height - 1
+
+        self.screen_height, self.screen_width = self.screen.getmaxyx()
+
+        self.feedback_line = self.screen_height - 1
         self.feedback_timer = 0
         self.mine = []
         self.visibility = []
@@ -26,13 +29,15 @@ class Mine:
         self.tribes = []
         self.dark = True
         self.build_mine()
+        self.offset_x = 0
+        self.offset_y = 0
 
     def push_feedback(self, line):
-        self.screen.addstr(self.feedback_line, 0, line + (' ' * (self.width - len(line))))
+        self.screen.addstr(self.feedback_line, 0, line + (' ' * (self.screen_width - len(line) - 1)))
         self.feedback_timer = 40
 
     def clear_feedback(self):
-        self.screen.addstr(self.feedback_line, 0, ' ' * self.width)
+        self.screen.addstr(self.feedback_line, 0, ' ' * (self.screen_width - 1))
 
     def push_message(self, message):
         MessageBox(self.screen, message)
@@ -200,18 +205,24 @@ class Mine:
                     self.pad.addch(y, x, current_state[y * self.width + x], curses.color_pair(current_colors[y * self.width + x]))
                 else:
                     self.pad.addch(y, x, '█', curses.color_pair(235))
-
         self.feedback_timer -= 1
         if self.feedback_timer == 0:
             self.clear_feedback()
-        height, width = self.screen.getmaxyx()
-        self.pad.refresh(0,0,0,0,height,width)
+        self.pad.refresh(self.offset_y,self.offset_x,0,0,self.screen_height-1,self.screen_width-1)
         c = self.screen.getch()
         if c != -1:
             if c == 105:
                 self.stats.show()
             elif c == 113:
                 sys.exit()
+            elif c == 258:
+                self.offset_y = min(self.offset_y+10, self.height - self.screen_height)
+            elif c == 259:
+                self.offset_y = max(0, self.offset_y - 10)
+            elif c == 261:
+                self.offset_x = min(self.offset_x+10, self.width - self.screen_width)
+            elif c == 260:
+                self.offset_x = max(0, self.offset_x - 10)
             elif c == 100:
                 for i in range(5):
                     miner = Miner(random.randint(0, self.width - 1), 0)
