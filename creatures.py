@@ -8,7 +8,7 @@ from actions import ExploreAction, SleepAction, PickUpAction, AttackAction, Call
 from allegiance import Allegiance
 
 class Creature:
-    def __init__(self, x, y):
+    def __init__(self, x, y, tribe=None):
         self.x = x
         self.y = y
         self.char = '☺'
@@ -29,11 +29,14 @@ class Creature:
         self.die_callbacks = []
         self.health = 200
         self.knowledge = []
-        self.tribe = None
+        self.tribe = tribe
 
         d = self.default_action()
         if d is not None:
             self.push_action(d)
+
+        if self.tribe is not None:
+            self.color = tribe.color
 
     def place_in_mine(self, mine):
         self.mine = mine
@@ -281,12 +284,12 @@ class Creature:
             return Allegiance.Friendly
         elif creature in self.enemies:
             return Allegiance.Hostile
+        elif self.get_tribe() and creature.get_tribe():
+            return self.get_tribe().allegiance_to(creature.get_tribe())
         elif creature.__class__ in self.friendly_types:
             return Allegiance.Friendly
         elif creature.__class__ in self.enemy_types:
             return Allegiance.Hostile
-        elif self.get_tribe() and creature.get_tribe():
-            return self.get_tribe().allegiance_to(creature.get_tribe())
         else:
             return Allegiance.Neutral
 
@@ -303,8 +306,8 @@ class Creature:
 
 class Snake(Creature):
 
-    def __init__(self, x=-1, y=-1, can_be_contagious=True):
-        super().__init__(x, y)
+    def __init__(self, x=-1, y=-1, can_be_contagious=True, tribe=None):
+        super().__init__(x, y, tribe=tribe)
         self.color = (23,8)
         self.view_distance = 4
         self.type = 'Snake'
@@ -342,8 +345,8 @@ class Snake(Creature):
 
 
 class Wizard(Creature):
-    def __init__(self, x, y):
-        super().__init__(x, y)
+    def __init__(self, x, y, tribe=None):
+        super().__init__(x, y, tribe=tribe)
         self.color = (11,8)
         self.view_distance = 5
         self.type = 'Wizard'
@@ -381,10 +384,7 @@ class Wizard(Creature):
 
 class Miner(Creature):
     def __init__(self, x, y, tribe=None):
-        super().__init__(x, y)
-        self.tribe = tribe
-        if self.tribe is not None:
-            self.color = tribe.color
+        super().__init__(x, y, tribe=tribe)
         self.likes_to_go_vertical = random.randint(10, 20)
         self.likes_to_go_horizontal = random.randint(10, 20)
         self.view_distance = 5
@@ -490,8 +490,8 @@ class DwarfKing(Miner):
 
 
 class Saboteur(Miner):
-    def __init__(self, x, y):
-        super().__init__(x, y)
+    def __init__(self, x, y, tribe=None):
+        super().__init__(x, y, tribe=tribe)
         self.char = '☺'
         self.color = (2,9)
         self.enchant(SaboteurSpell())

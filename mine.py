@@ -12,6 +12,7 @@ from stats import Stats
 class Mine:
     def __init__(self, screen, width, height):
         self.screen = screen
+        self.pad = curses.newpad(width+10, height+10)
         self.stats = Stats(screen, self)
         self.width = width
         self.height = height - 1
@@ -196,14 +197,15 @@ class Mine:
         for y in range(self.height):
             for x in range(self.width):
                 if not self.dark or self.visibility[self.width * y + x]:
-                    self.screen.addstr(y, x, current_state[y * self.width + x], curses.color_pair(current_colors[y * self.width + x]))
+                    self.pad.addch(y, x, current_state[y * self.width + x], curses.color_pair(current_colors[y * self.width + x]))
                 else:
-                    self.screen.addstr(y, x, '█', curses.color_pair(235))
+                    self.pad.addch(y, x, '█', curses.color_pair(235))
 
         self.feedback_timer -= 1
         if self.feedback_timer == 0:
             self.clear_feedback()
-        self.screen.refresh()
+        height, width = self.screen.getmaxyx()
+        self.pad.refresh(0,0,0,0,height,width)
         c = self.screen.getch()
         if c != -1:
             if c == 105:

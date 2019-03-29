@@ -4,6 +4,8 @@ from creatures import Miner, Saboteur, Wizard, Snake, DwarfKing
 from mine import Mine
 from tribe import Tribe
 from items import Treasure, Map
+from actions import ExploreAction
+from traits import Contagious
 
 COLORS = [(206, 0), (209, 0), (154, 0), (142, 0), (221, 0), (249, 0)]
 KING_COLORS = [(212, 0), (216, 0), (124, 0), (184, 0), (222, 0), (253, 0)]
@@ -32,7 +34,7 @@ class MineGenerator():
 
         miner_count = int(self.args.miners) if self.args.miners is not None else random.randint(1, 200)
         for i in range(miner_count):
-            tribe = random.choice(m.tribes)
+            tribe = random.choice([t for t in m.tribes if Miner in t.creatures])
 
             x = random.randint(tribe.min_x, tribe.max_x)
 
@@ -56,9 +58,23 @@ class MineGenerator():
             wizard = Wizard(random.randint(0, m.width - 1), random.randint(math.ceil(m.height / 3), m.height - 1))
             m.add_creature(wizard)
 
+        def make_explore_action():
+            return ExploreAction()
+
         snake_count = int(self.args.snakes) if self.args.snakes is not None else random.randint(1, 5)
         for i in range(snake_count):
-            snake = Snake(random.randint(0, m.width - 1), random.randint(math.ceil(m.height / 5), m.height - 1))
+            tribe = random.choice([t for t in m.tribes if Snake in t.creatures])
+            x = random.randint(tribe.min_x, tribe.max_x)
+            snake = Snake(x, 0, tribe=tribe)
+
+            snake.default_action = make_explore_action
+            snake.push_action(ExploreAction())
+            if snake.has_trait(Contagious):
+                snake.color = KING_COLORS[tribe.id]
+            else:
+                snake.color = tribe.color
+
+#            snake = Snake(random.randint(0, m.width - 1), random.randint(math.ceil(m.height / 5), m.height - 1))
             m.add_creature(snake)
 
         for i in range(random.randint(1, 10)):
