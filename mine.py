@@ -187,6 +187,21 @@ class Mine:
             self.stats.show()
             sys.exit()
 
+    def show_temp_char(self, x, y, char):
+        """
+        Show a temporary character in the mine
+        """
+        try:
+            char_x = x - self.offset_x
+            char_y = y - self.offset_y
+            if char_x < 0 or char_y <0:
+                return
+            if char_x >= self.width or char_y >= self.height:
+                return
+            self.screen.addstr(y-self.offset_y, x-self.offset_x, char)
+        except:
+            assert False, (y,self.offset_y,x,self.offset_x)
+
     def print_current_level(self):
         current_state = [s.get_char() for s in self.mine]
         current_colors = [s.color for s in self.mine]

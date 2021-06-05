@@ -334,7 +334,7 @@ class Snake(Creature):
 
     def attack(self, creature):
         super().attack(creature)
-        self.mine.screen.addstr(self.y, self.x, '!')
+        self.mine.show_temp_char(self.x,self.y, '!')
         if self.has_trait(Contagious):
             if random.randint(1,10)==1:
                 new_snake = Snake(can_be_contagious=False)
@@ -471,7 +471,7 @@ class Miner(Creature):
 
     def attack(self, creature):
         super().attack(creature)
-        self.mine.screen.addstr(self.y, self.x, '!')
+        self.mine.show_temp_char(self.x,self.y, '!')
         damage = random.randint(1,5)
         creature.hit(damage,'was killed by a {}'.format(self.type))
         if not creature.alive and isinstance(creature, DwarfKing):
