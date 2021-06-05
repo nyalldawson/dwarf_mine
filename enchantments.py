@@ -112,7 +112,7 @@ class Firestarter(Enchantment):
         return (197,10)
 
     def alter_char(self, char):
-        return str(self.countdown / 20)
+        return str(self.countdown // 20)
 
     def place_on_creature(self, creature):
         Enchantment.place_on_creature(self, creature)

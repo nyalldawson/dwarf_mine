@@ -47,8 +47,10 @@ class Creature:
 
     def get_char(self):
         c = self.char
+        assert len(c) == 1, c
         for e in self.enchantments:
             c = e.alter_char(c)
+            assert len(c) == 1, (c, e)
         return c
 
     def get_color(self):
