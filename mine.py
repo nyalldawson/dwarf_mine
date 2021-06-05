@@ -196,17 +196,24 @@ class Mine:
             char_y = y - self.offset_y
             if char_x < 0 or char_y <0:
                 return
-            if char_x >= self.width or char_y >= self.height:
+            if char_x >= self.screen_width or char_y >= self.screen_height:
                 return
-            self.screen.addstr(y-self.offset_y, x-self.offset_x, char)
+            self.screen.addch(y-self.offset_y, x-self.offset_x, char)
         except:
-            assert False, (y,self.offset_y,x,self.offset_x)
+            assert False, (y,self.offset_y,x,self.offset_x, self.screen_height, self.screen_width)
 
     def print_current_level(self):
-        current_state = [s.get_char() for s in self.mine]
+        current_state = []
+        for s in self.mine:
+            c = s.get_char()
+            assert len(str(c)) == 1, s
+            current_state.append(c)
+        #current_state = [s.get_char() for s in self.mine]
         current_colors = [s.color for s in self.mine]
 
         for m in self.creatures:
+            c = m.get_char()
+            assert len(str(c)) == 1, (m, c)
             current_state[m.y * self.width + m.x] = m.get_char()
             current_colors[m.y * self.width + m.x] = m.get_color()
 
@@ -217,7 +224,11 @@ class Mine:
         for y in range(self.height):
             for x in range(self.width):
                 if not self.dark or self.visibility[self.width * y + x]:
-                    self.pad.addch(y, x, current_state[y * self.width + x], curses.color_pair(current_colors[y * self.width + x]))
+                    try:
+                        self.pad.addch(y, x, current_state[y * self.width + x], curses.color_pair(current_colors[y * self.width + x]))
+                    except:
+
+                        assert False, (y,x, current_state[y * self.width + x])
                 else:
                     self.pad.addch(y, x, '█', curses.color_pair(235))
         self.feedback_timer -= 1

@@ -12,8 +12,8 @@ def main(screen, args):
     screen.nodelay(1)
 
     height, width = screen.getmaxyx()
-    width *= 3
-    height *= 2
+    width = args.width or width * 3
+    height = args.depth or height * 2
 
     for i in range(0, curses.COLORS):
         curses.init_pair(i + 1, i, 16)
@@ -38,6 +38,8 @@ if __name__ == '__main__':
     parser.add_argument("--snakes", help="how many snakes to add", type=int)
     parser.add_argument("--tribes", help="how many opposing dwarf tribes", type=int, default=2)
     parser.add_argument("--saboteurs", help="how many saboteurs to add", type=int)
+    parser.add_argument("--width", help="mine width", type=int)
+    parser.add_argument("--depth", help="mine depth", type=int)
     args = parser.parse_args()
     if args.show_colors:
         curses.wrapper(show_colors)
