@@ -1,6 +1,7 @@
 import random
 import sys
 import curses
+from collections import defaultdict
 
 from message_box import MessageBox
 from materials import Lava, Dirt, Space, Water
@@ -31,6 +32,7 @@ class Mine:
         self.build_mine()
         self.offset_x = 0
         self.offset_y = 0
+        self.temp_overrides = defaultdict(dict)
 
     def push_feedback(self, line):
         self.screen.addstr(self.feedback_line, 0, line + (' ' * (self.screen_width - len(line) - 1)))
@@ -191,6 +193,9 @@ class Mine:
         """
         Show a temporary character in the mine
         """
+
+        self.temp_overrides[x][y] = char
+        return
         try:
             char_x = x - self.offset_x
             char_y = y - self.offset_y
@@ -221,6 +226,12 @@ class Mine:
             current_state[i.y * self.width + i.x] = i.char
             current_colors[i.y * self.width + i.x] = i.color
 
+        for x, overrides in self.temp_overrides.items():
+            for y, char in overrides.items():
+                current_state[y*self.width + x] = char
+
+        self.temp_overrides = defaultdict(dict)
+
         for y in range(self.height):
             for x in range(self.width):
                 if not self.dark or self.visibility[self.width * y + x]:
@@ -236,6 +247,7 @@ class Mine:
             self.clear_feedback()
         self.pad.refresh(self.offset_y,self.offset_x,0,0,self.screen_height-1,self.screen_width-1)
         c = self.screen.getch()
+
         if c != -1:
             if c == 105:
                 self.stats.show()
