@@ -263,5 +263,7 @@ class Mine:
                 for x in range(self.width):
                     if isinstance(self.mine[x], Space):
                         self.set_material(x,0, Fire(150))
+            elif c == ord('l'):
+                self.dark = not self.dark
             else:
                 self.push_feedback(str(c))

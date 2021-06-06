@@ -21,6 +21,8 @@ def main(screen, args):
     g = MineGenerator(width - 1, height - 1, args)
     m = g.build_mine(screen, pad)
 
+    m.stats.show_teams()
+
     if args.lights:
         m.dark = False
 
