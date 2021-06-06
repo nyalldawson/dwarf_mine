@@ -1,5 +1,6 @@
 from allegiance import Allegiance
 
+
 class Tribe:
 
     def __init__(self, id):
@@ -16,7 +17,6 @@ class Tribe:
         from creatures import Miner, DwarfKing, Snake, Wizard
 
         self.creatures = [Miner, Snake]
-
 
     def allegiance_to(self, tribe):
         if tribe == self:

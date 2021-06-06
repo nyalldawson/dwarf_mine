@@ -11,10 +11,10 @@ class Item:
     def add_to_mine(self, mine):
         self.mine = mine
 
-    def is_attractive_to(self, creature):
+    def is_attractive_to(self, creature: 'Creature'):
         return False
 
-    def found_by(self, creature):
+    def found_by(self, creature: 'Creature'):
         pass
 
     def alter_color(self):

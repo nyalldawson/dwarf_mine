@@ -1,3 +1,4 @@
+from typing import List
 import random
 import sys
 import curses
@@ -25,8 +26,8 @@ class Mine:
         self.mine = []
         self.visibility = []
         self.colors = []
-        self.creatures = []
-        self.items = []
+        self.creatures: List['Creature'] = []
+        self.items: List['Item'] = []
         self.tribes = []
         self.dark = True
         self.build_mine()
@@ -83,7 +84,7 @@ class Mine:
         if creature in self.creatures:
             self.creatures.remove(creature)
 
-    def add_item(self, item):
+    def add_item(self, item: 'Item'):
         self.items.append(item)
         item.add_to_mine(self)
         self.set_material(item.x, item.y, Space())
@@ -165,12 +166,12 @@ class Mine:
         for cell in self.mine:
             cell.action()
 
-        for m in self.creatures:
-            m.move()
+        for creature in self.creatures:
+            creature.move()
             for i in self.items:
-                if m.x == i.x and m.y == i.y:
+                if creature.x == i.x and creature.y == i.y:
                     self.items.remove(i)
-                    m.add_item(i)
+                    creature.add_item(i)
 
         self.print_current_level()
 

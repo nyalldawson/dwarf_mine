@@ -25,7 +25,7 @@ class BookOfSpells(Item):
 
         return False
 
-    def found_by(self, creature):
+    def found_by(self, creature: 'Creature'):
         if self.spell is not None:
             creature.learn(self.spell)
-        creature.mine.push_message('{} {} found a {} and learnt the {} spell!'.format(creature.tribe.name, creature.type, self.type, self.spell.type))
+        creature.mine.push_message(f'{creature.get_identifier()} found a {self.type} and learnt the {self.spell.type} spell!')

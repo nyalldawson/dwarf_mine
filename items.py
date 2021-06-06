@@ -15,11 +15,11 @@ class Treasure(Item):
         if random.randint(1, 5) == 1:
             treasures = ['magic ring', 'magic hat', 'magic glove']
             self.type = treasures[random.randint(0, len(treasures) - 1)]
-            spells = [DeterminationSpell,Invisibility]
+            spells = [DeterminationSpell, Invisibility]
             self.spell = spells[random.randint(0, len(spells) - 1)]()
         else:
             treasures = ['crown', 'gold nugget', 'diamond', 'shiny ring', 'gold ring', 'silver ring', 'treasure chest',
-                         'gold coin', 'ruby', 'shiny necklace','precious cup']
+                         'gold coin', 'ruby', 'shiny necklace', 'precious cup']
             self.type = treasures[random.randint(0, len(treasures) - 1)]
             self.spell = None
 
@@ -35,19 +35,19 @@ class Treasure(Item):
 
         return False
 
-    def found_by(self, creature):
+    def found_by(self, creature: 'Creature'):
         if self.spell is not None:
             creature.enchant(self.spell)
-        creature.mine.push_message('{} {} found a {}!'.format(creature.tribe.name, creature.type, self.type))
+        creature.mine.push_message(f'{creature.get_identifier()} found a {self.type}!')
 
 
 class Map(Item):
-    def __init__(self, x, y, target):
+    def __init__(self, x, y, target: Item):
         super().__init__(x, y)
         self.char = 'M'
         self.color = 181
         self.type = 'map'
-        self.target = target
+        self.target: Item = target
         self.search_area = None
 
     def add_to_mine(self, mine):
@@ -55,18 +55,17 @@ class Map(Item):
         hole_size = random.randint(4, 8)
         mine.create_cave(self.x, self.y, hole_size)
         mine.set_visibility(self.x, self.y, True)
-        self.search_area = Rect.from_center(self.target.x,self.target.y,math.ceil(self.mine.width / 6),
+        self.search_area = Rect.from_center(self.target.x, self.target.y, math.ceil(self.mine.width / 6),
                                             math.ceil(self.mine.height / 6))
 
-    def is_attractive_to(self, creature):
+    def is_attractive_to(self, creature: 'Creature'):
         if isinstance(creature, Miner):
             return True
 
         return False
 
-    def found_by(self, creature):
+    def found_by(self, creature: 'Creature'):
         if self.target in self.mine.items:
             # target item still exists
-            self.mine.push_message('{} {} found a map for a {}!'.format(creature.get_tribe().name, creature.type, self.target.type))
-            creature.push_action(SearchAction(self.target,self.search_area))
-
+            self.mine.push_message(f'{creature.get_identifier()} found a map for a {self.target.type}!')
+            creature.push_action(SearchAction(self.target, self.search_area))

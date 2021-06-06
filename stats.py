@@ -16,7 +16,7 @@ class Stats():
         if isinstance(item, Treasure) and isinstance(creature, Miner):
             self.treasures_collected.append(item.type)
 
-    def creature_died(self, creature, death):
+    def creature_died(self, creature: 'Creature', death: str):
         self.deaths.append((creature.type, death))
 
     def show(self):
