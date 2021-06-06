@@ -1,3 +1,4 @@
+from typing import Optional
 import random
 import math
 
@@ -95,12 +96,12 @@ class Fire(Material):
     Fire. Ouch!
     """
 
-    def __init__(self):
+    def __init__(self, temperature: Optional[int] = None):
         Material.__init__(self)
         self.char = '*'
         fire_color = [10, 161, 125]
         self.color = fire_color[random.randint(0, len(fire_color) - 1)]
-        self.temperature = random.randint(500, 1000)
+        self.temperature = temperature or random.randint(500, 1000)
 
     def action(self):
         # check adjacent cells

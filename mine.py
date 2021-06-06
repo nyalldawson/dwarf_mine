@@ -5,7 +5,7 @@ import curses
 from collections import defaultdict
 
 from message_box import MessageBox
-from materials import Lava, Dirt, Space, Water
+from materials import Lava, Dirt, Space, Water, Fire
 from utils import Utils
 from items import Treasure
 from creatures import Miner, Saboteur, DwarfKing
@@ -185,10 +185,10 @@ class Mine:
             self.stats.show()
             sys.exit()
 
-        if len([c for c in self.creatures if isinstance(c, DwarfKing)]) == 0:
-            self.push_message('The Dwarf King died\n\nYou lose!')
-            self.stats.show()
-            sys.exit()
+#        if len([c for c in self.creatures if isinstance(c, Miner)]) == 0:
+#            self.push_message('The Dwarf King died\n\nYou lose!')
+#            self.stats.show()
+#            sys.exit()
 
     def show_temp_char(self, x, y, char):
         """
@@ -196,17 +196,6 @@ class Mine:
         """
 
         self.temp_overrides[x][y] = char
-        return
-        try:
-            char_x = x - self.offset_x
-            char_y = y - self.offset_y
-            if char_x < 0 or char_y <0:
-                return
-            if char_x >= self.screen_width or char_y >= self.screen_height:
-                return
-            self.screen.addch(y-self.offset_y, x-self.offset_x, char)
-        except:
-            assert False, (y,self.offset_y,x,self.offset_x, self.screen_height, self.screen_width)
 
     def print_current_level(self):
         current_state = []
@@ -266,5 +255,13 @@ class Mine:
                 for i in range(5):
                     miner = Miner(random.randint(0, self.width - 1), 0)
                     self.add_creature(miner)
+            elif c == 114:
+                for x in range(self.width):
+                    if isinstance(self.mine[x], Space):
+                        self.set_material(x,0, Water(100))
+            elif c == ord('f'):
+                for x in range(self.width):
+                    if isinstance(self.mine[x], Space):
+                        self.set_material(x,0, Fire(150))
             else:
                 self.push_feedback(str(c))
