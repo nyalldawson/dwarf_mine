@@ -45,12 +45,11 @@ class MineGenerator():
             hole_size = random.randint(4, 8)
             m.create_cave(random.randint(0, m.width - 1), random.randint(0, m.height - 1), hole_size)
 
-        saboteur_tribe = Tribe(-1)
-        saboteur_tribe.name = 'Saboteur'
+        outcast_tribe = Tribe(-1)
+        outcast_tribe.name = 'Outcast'
         saboteur_count = self.args.saboteurs or random.randint(1, 3)
         for i in range(saboteur_count):
-            saboteur = Saboteur(random.randint(0, m.width - 1), int(m.height / 2))
-            saboteur.tribe = saboteur_tribe
+            saboteur = Saboteur(random.randint(0, m.width - 1), int(m.height / 2), tribe=outcast_tribe)
             m.add_creature(saboteur)
 
         wizard_count = self.args.wizards or random.randint(1, 5)

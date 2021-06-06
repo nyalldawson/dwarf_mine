@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import random
 from copy import deepcopy
@@ -11,7 +11,7 @@ from allegiance import Allegiance
 
 
 class Creature:
-    def __init__(self, x, y, tribe=None):
+    def __init__(self, x, y, tribe: Optional['Tribe']=None):
         self.x = x
         self.y = y
         self.char = '☺'
@@ -32,7 +32,7 @@ class Creature:
         self.die_callbacks = []
         self.health = 200
         self.knowledge = []
-        self.tribe = tribe
+        self.tribe: Optional['Tribe'] = tribe
 
         d = self.default_action()
         if d is not None:
@@ -53,7 +53,7 @@ class Creature:
         Returns a identifier string for the character, eg "blue snake", "evil wizard", etc
         """
         if self.get_tribe() is not None:
-            return f'{self.get_tribe().name} {self.type}'
+            return f'{self.get_tribe().name} {self.type.lower()}'
         return self.type
 
     def get_char(self):
@@ -395,7 +395,7 @@ class Wizard(Creature):
 
 
 class Miner(Creature):
-    def __init__(self, x, y, tribe=None):
+    def __init__(self, x, y, tribe: Optional['Tribe']=None):
         super().__init__(x, y, tribe=tribe)
         self.likes_to_go_vertical = random.randint(10, 20)
         self.likes_to_go_horizontal = random.randint(10, 20)
@@ -502,7 +502,7 @@ class DwarfKing(Miner):
 
 
 class Saboteur(Miner):
-    def __init__(self, x, y, tribe=None):
+    def __init__(self, x, y, tribe: Optional['Tribe']=None):
         super().__init__(x, y, tribe=tribe)
         self.char = '☺'
         self.color = (2, 9)
