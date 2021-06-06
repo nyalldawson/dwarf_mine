@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from items import Treasure
 from creatures import Miner
 from message_box import MessageBox
@@ -8,13 +10,13 @@ class Stats():
 
     def __init__(self, screen, mine):
         self.screen = screen
-        self.treasures_collected = []
+        self.treasures_collected = defaultdict(list)
         self.deaths = []
         self.mine = mine
 
-    def item_collected(self, creature, item):
+    def item_collected(self, creature: 'Creature', item: 'Item'):
         if isinstance(item, Treasure) and isinstance(creature, Miner):
-            self.treasures_collected.append(item.type)
+            self.treasures_collected[creature.get_tribe()].append(item.type)
 
     def creature_died(self, creature: 'Creature', death: str):
         self.deaths.append((creature.type, death))
@@ -26,12 +28,19 @@ class Stats():
 
     def show_treasures(self):
         message = ['Treasures found','', '']
-        c = Counter(self.treasures_collected)
-        for t, count in c.items():
-            if count == 1:
-                message.append('- A {}'.format(t))
-            else:
-                message.append('- {} {}s'.format(count, t))
+        for tribe, treasures in self.treasures_collected.items():
+            if not treasures:
+                continue
+
+            message.append(f'{tribe.name} team ({len(treasures)}):')
+            c = Counter(treasures)
+            for t, count in c.items():
+                if count == 1:
+                    message.append('- A {}'.format(t))
+                else:
+                    message.append('- {} {}s'.format(count, t))
+            message.append('')
+
         MessageBox(self.screen,'\n'.join(message))
 
     def show_deaths(self):
