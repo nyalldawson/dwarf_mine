@@ -20,7 +20,6 @@ class Creature:
         self.enchantments = []
         self.view_distance = 0
         self.actions = []
-        self.items: List['Item'] = []
         self.traits = []
         self.type: str = 'Creature'
         self.friends = []
@@ -32,6 +31,7 @@ class Creature:
         self.die_callbacks = []
         self.health = 200
         self.knowledge = []
+        self.items: List['Item'] = []
         self.tribe: Optional['Tribe'] = tribe
 
         d = self.default_action()
@@ -130,6 +130,12 @@ class Creature:
                 self.mine.push_message(self.tribe.name + ' King ' + message)
 
     def die(self, message):
+        for i in self.items:
+            i.x = self.x
+            i.y = self.y
+            self.mine.add_item(i)
+        self.items = []
+
         self.mine.stats.creature_died(self, message)
         self.mine.remove_creature(self)
         self.mine.push_feedback(f'{self.get_identifier()} {message}!')

@@ -36,6 +36,7 @@ class Treasure(Item):
         return False
 
     def found_by(self, creature: 'Creature'):
+        super().found_by(creature)
         if self.spell is not None:
             creature.enchant(self.spell)
         creature.mine.push_message(f'{creature.get_identifier()} found a {self.type}!')
@@ -65,6 +66,7 @@ class Map(Item):
         return False
 
     def found_by(self, creature: 'Creature'):
+        super().found_by(creature)
         if self.target in self.mine.items:
             # target item still exists
             self.mine.push_message(f'{creature.get_identifier()} found a map for a {self.target.type}!')
