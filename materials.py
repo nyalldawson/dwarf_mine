@@ -151,7 +151,8 @@ class Fire(Material):
 
     def touch_creature(self, creature):
         if self.temperature > 130:
-            creature.die('was burnt by fire')
+            from events import BurntToDeathEvent
+            creature.die(BurntToDeathEvent(victim=creature, cause='fire'))
 
 
 class Lava(Fire):
@@ -174,7 +175,8 @@ class Lava(Fire):
 
     def touch_creature(self, creature):
         if self.temperature > 130:
-            creature.die('was burnt by lava')
+            from events import BurntToDeathEvent
+            creature.die(BurntToDeathEvent(victim=creature, cause='lava'))
 
 
 class Water(Material):
@@ -295,4 +297,5 @@ class Water(Material):
 
     def touch_creature(self, creature):
         if self.capacity > 70:
-            creature.die('drowned')
+            from events import DrownedEvent
+            creature.die(DrownedEvent(victim=creature))

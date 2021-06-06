@@ -18,8 +18,25 @@ class Stats():
         if isinstance(item, Treasure) and isinstance(creature, Miner):
             self.treasures_collected[creature.get_tribe()].append(item.type)
 
-    def creature_died(self, creature: 'Creature', death: str):
-        self.deaths.append((creature.type, death))
+    def creature_died(self, event: 'DeathEvent'):
+        from creatures import DwarfKing
+
+        #self.mine.push_feedback(f'{self.get_identifier()} {message}!')
+
+        if isinstance(event.victim, DwarfKing):
+            self.mine.push_message(event.get_message())
+            self.deaths.append((event.victim.get_identifier(), event.get_partial_message()))
+        else:
+            self.deaths.append((event.victim.type, event.get_partial_message()))
+
+    def push_event(self, event: 'Event'):
+        """
+        Pushes an event which occurred
+        """
+        from events import DeathEvent
+
+        if isinstance(event, DeathEvent):
+            self.creature_died(event)
 
     def show(self):
         shown_something = False

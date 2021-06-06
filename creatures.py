@@ -122,23 +122,21 @@ class Creature:
         item.found_by(self)
         self.mine.stats.item_collected(self, item)
 
-    def hit(self, damage, message):
+    def hit(self, damage, attacker: 'Creature'):
         self.health -= damage
         if self.health <= 0:
-            self.die(message)
-            if isinstance(self, DwarfKing):
-                self.mine.push_message(self.tribe.name + ' King ' + message)
+            from events import DeathByCreatureEvent
+            self.die(DeathByCreatureEvent(victim=self, killer=attacker))
 
-    def die(self, message):
+    def die(self, event: 'Event'):
         for i in self.items:
             i.x = self.x
             i.y = self.y
             self.mine.add_item(i)
         self.items = []
 
-        self.mine.stats.creature_died(self, message)
+        self.mine.stats.push_event(event)
         self.mine.remove_creature(self)
-        self.mine.push_feedback(f'{self.get_identifier()} {message}!')
         self.alive = False
         for c in self.die_callbacks:
             c(self)
@@ -359,7 +357,7 @@ class Snake(Creature):
                 creature.replace_with(new_snake)
         else:
             damage = random.randint(1, 50)
-            creature.hit(damage, 'was killed by a {}'.format(self.type))
+            creature.hit(damage, self)
 
 
 class Wizard(Creature):
@@ -392,8 +390,8 @@ class Wizard(Creature):
     def target_attack_at(self, creature):
         self.attack_with_spell(creature)
 
-    def die(self, message):
-        super().die(message)
+    def die(self, event: 'Event'):
+        super().die(event)
 
         from book_of_spells import BookOfSpells
 
@@ -491,9 +489,7 @@ class Miner(Creature):
         super().attack(creature)
         self.mine.show_temp_char(self.x, self.y, '!')
         damage = random.randint(1, 5)
-        creature.hit(damage, f'was killed by a {self.get_identifier()}')
-        if not creature.alive and isinstance(creature, DwarfKing):
-            self.mine.push_message(f'{self.get_identifier()} killed a {creature.get_identifier()}')
+        creature.hit(damage, self)
 
 
 class DwarfKing(Miner):
