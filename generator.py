@@ -32,7 +32,7 @@ class MineGenerator():
             new_tribe.name = NAMES[t]
             m.tribes.append(new_tribe)
 
-        miner_count = int(self.args.miners) if self.args.miners is not None else random.randint(1, 200)
+        miner_count = self.args.miners or random.randint(1, 200)
         for i in range(miner_count):
             tribe = random.choice([t for t in m.tribes if Miner in t.creatures])
 
@@ -47,13 +47,13 @@ class MineGenerator():
 
         saboteur_tribe = Tribe(-1)
         saboteur_tribe.name = 'Saboteur'
-        saboteur_count = int(self.args.saboteurs) if self.args.saboteurs is not None else random.randint(1, 3)
+        saboteur_count = self.args.saboteurs or random.randint(1, 3)
         for i in range(saboteur_count):
             saboteur = Saboteur(random.randint(0, m.width - 1), int(m.height / 2))
             saboteur.tribe = saboteur_tribe
             m.add_creature(saboteur)
 
-        wizard_count = int(self.args.wizards) if self.args.wizards is not None else random.randint(1, 5)
+        wizard_count = self.args.wizards or random.randint(1, 5)
         for i in range(wizard_count):
             wizard = Wizard(random.randint(0, m.width - 1), random.randint(math.ceil(m.height / 3), m.height - 1))
             m.add_creature(wizard)
@@ -61,7 +61,7 @@ class MineGenerator():
         def make_explore_action():
             return ExploreAction()
 
-        snake_count = int(self.args.snakes) if self.args.snakes is not None else random.randint(1, 5)
+        snake_count = self.args.snakes or random.randint(1, 5)
         for i in range(snake_count):
             tribe = random.choice([t for t in m.tribes if Snake in t.creatures])
             x = random.randint(tribe.min_x, tribe.max_x)
@@ -77,7 +77,8 @@ class MineGenerator():
 #            snake = Snake(random.randint(0, m.width - 1), random.randint(math.ceil(m.height / 5), m.height - 1))
             m.add_creature(snake)
 
-        for i in range(random.randint(1, 10)):
+        treasure_count = self.args.treasures or random.randint(1, 10)
+        for i in range(treasure_count):
             treasure = Treasure(random.randint(0, m.width - 1), random.randint(10, m.height - 1))
             m.add_item(treasure)
             map_item = Map(random.randint(0, m.width - 1), random.randint(5, m.height - 1), treasure)
