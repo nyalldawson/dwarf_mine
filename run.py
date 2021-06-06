@@ -12,8 +12,8 @@ def main(screen, args):
     screen.nodelay(1)
 
     height, width = screen.getmaxyx()
-    width = args.width or width * 3
-    height = args.depth or height * 2
+    width = args.width or width
+    height = args.depth or height
 
     for i in range(0, curses.COLORS):
         curses.init_pair(i + 1, i, 16)
