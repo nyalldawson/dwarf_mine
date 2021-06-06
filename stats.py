@@ -19,11 +19,7 @@ class Stats():
             self.treasures_collected[creature.get_tribe()].append(item.type)
 
     def creature_died(self, event: 'DeathEvent'):
-        from creatures import DwarfKing
-
-        #self.mine.push_feedback(f'{self.get_identifier()} {message}!')
-
-        if isinstance(event.victim, DwarfKing):
+        if event.victim.is_unique():
             self.mine.push_message(event.get_message())
             self.deaths.append((event.victim.get_identifier(), event.get_partial_message()))
         else:

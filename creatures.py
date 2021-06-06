@@ -41,6 +41,12 @@ class Creature:
         if self.tribe is not None:
             self.color = tribe.color
 
+    def is_unique(self) -> bool:
+        """
+        Character is special or unique in some way
+        """
+        return False
+
     def place_in_mine(self, mine):
         self.mine = mine
         self.look()
@@ -502,6 +508,8 @@ class DwarfKing(Miner):
         self.add_trait(Determined(level=4))
         self.add_trait(Leader())
 
+    def is_unique(self) -> bool:
+        return True
 
 class Saboteur(Miner):
     def __init__(self, x, y, tribe: Optional['Tribe']=None):

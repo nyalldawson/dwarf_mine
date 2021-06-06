@@ -29,10 +29,16 @@ class DeathByCreatureEvent(DeathEvent):
         self.killer = killer
 
     def get_partial_message(self) -> str:
-        return f'was killed by a {self.killer.type}'
+        if self.killer.is_unique():
+            return f'was killed by {self.killer.get_identifier()}'
+        else:
+            return f'was killed by a {self.killer.type}'
 
     def get_message(self) -> str:
-        return f'{self.victim.get_identifier()} was killed by a {self.killer.type}'
+        if self.killer.is_unique():
+            return f'{self.victim.get_identifier()} was killed by {self.killer.get_identifier()}'
+        else:
+            return f'{self.victim.get_identifier()} was killed by a {self.killer.type}'
 
 
 class DrownedEvent(DeathEvent):
