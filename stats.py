@@ -34,12 +34,12 @@ class Stats():
         if isinstance(event, DeathEvent):
             self.creature_died(event)
 
-    def show(self):
-        shown_something = False
-        if self.show_treasures():
-            shown_something = True
+    def show_creatures(self):
+        if self.show_unique_creatures():
             self.mine.print_current_level()
 
+    def show(self):
+        shown_something = False
         if self.show_treasures():
             shown_something = True
             self.mine.print_current_level()
@@ -66,32 +66,44 @@ class Stats():
 
         MessageBox(self.screen,'\n'.join(message))
 
-    def show_treasures(self) -> bool:
-        message = ['Treasures found','', '']
-        found = False
-        for tribe in self.mine.tribes:
-            treasures = []
-            for c in self.mine.creatures:
-                if c.tribe == tribe:
-                    treasures.extend(i.type for i in c.items if isinstance(i, Treasure))
-
-            if not treasures:
+    def show_unique_creatures(self) -> bool:
+        for c in self.mine.creatures:
+            if not c.is_unique():
                 continue
 
-            found = True
+            found_something = False
+            message = [c.get_identifier(),'', '']
 
-            message.append(f'{tribe.name} team ({len(treasures)}):')
-            c = Counter(treasures)
-            for t, count in c.items():
-                if count == 1:
-                    message.append('- A {}'.format(t))
-                else:
-                    message.append('- {} {}s'.format(count, t))
-            message.append('')
+            if c.items:
+                found_something = True
+                message.append('Carrying:')
+                counter = Counter([i.type for i in c.items])
+                for t, count in counter.items():
+                    if count == 1:
+                        message.append('- A {}'.format(t))
+                    else:
+                        message.append('- {} {}s'.format(count, t))
 
-        if found:
+                message.append('')
+
+            if c.knowledge:
+                found_something = True
+                message.append('Knowledge:')
+                for i in c.knowledge:
+                    message.append(f'- {i.type}')
+
+                message.append('')
+
+            if c.enchantments:
+                found_something = True
+                message.append('Enchantments:')
+                for i in c.enchantments:
+                    message.append(f'- {i.type}')
+
+                message.append('')
+
             MessageBox(self.screen,'\n'.join(message))
-        return found
+            self.mine.print_current_level()
 
     def show_items(self) -> bool:
         message = ['Items found','', '']
@@ -118,6 +130,33 @@ class Stats():
         if found:
             MessageBox(self.screen,'\n'.join(message))
 
+        return found
+
+    def show_treasures(self) -> bool:
+        message = ['Treasures found','', '']
+        found = False
+        for tribe in self.mine.tribes:
+            treasures = []
+            for c in self.mine.creatures:
+                if c.tribe == tribe:
+                    treasures.extend(i.type for i in c.items if isinstance(i, Treasure))
+
+            if not treasures:
+                continue
+
+            found = True
+
+            message.append(f'{tribe.name} team ({len(treasures)}):')
+            c = Counter(treasures)
+            for t, count in c.items():
+                if count == 1:
+                    message.append('- A {}'.format(t))
+                else:
+                    message.append('- {} {}s'.format(count, t))
+            message.append('')
+
+        if found:
+            MessageBox(self.screen,'\n'.join(message))
         return found
 
     def show_knowledge(self) -> bool:

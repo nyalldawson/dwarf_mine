@@ -241,6 +241,8 @@ class Mine:
         if c != -1:
             if c == 105:
                 self.stats.show()
+            elif c == ord('c'):
+                self.stats.show_creatures()
             elif c == 113:
                 sys.exit()
             elif c == 258:
