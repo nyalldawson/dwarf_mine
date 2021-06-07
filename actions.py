@@ -18,6 +18,15 @@ class Action:
     def do(self):
         pass
 
+    def explanation(self) -> str:
+        """
+        Explains the action
+        """
+        return ''
+
+    def can_remove(self) -> bool:
+        return False
+
 
 class SleepAction(Action):
     def __init__(self):
@@ -25,6 +34,9 @@ class SleepAction(Action):
         self.duration = random.randint(100, 300)
         self.original_char = None
         self.blocks_looking = True
+
+    def explanation(self) -> str:
+        return 'sleeping'
 
     def added_to_creature(self, creature):
         super().added_to_creature(creature)
@@ -61,6 +73,9 @@ class GoToAction(Action):
         Action.__init__(self)
         self.x = x
         self.y = y
+
+    def explanation(self) -> str:
+        return 'going somewhere'
 
     def get_target_locations(self):
         return [(self.x,self.y)]
@@ -133,6 +148,9 @@ class PickUpAction(GoToAction):
         super().__init__(item.x, item.y)
         self.item = item
 
+    def explanation(self) -> str:
+        return f'picking up an {self.item.type}'
+
     def can_remove(self):
         if self.item not in self.creature.mine.items:
             return True
@@ -149,6 +167,9 @@ class AttackAction(GoToAction):
         def die_callback(creature):
             self.creature.remove_action(self)
         self.target.push_die_callback(die_callback)
+
+    def explanation(self) -> str:
+        return f'attacking a {self.target.get_identifier()}'
 
     def can_remove(self):
         if self.creature.allegiance_to(self.target) != Allegiance.Hostile:
@@ -193,6 +214,9 @@ class SearchAction(GoToAction):
         self.search_rect = search_rect
         self.cells = []
 
+    def explanation(self) -> str:
+        return 'searching for something'
+
     def can_remove(self):
         if self.target is not None and self.target not in self.creature.mine.items:
             return True
@@ -221,6 +245,9 @@ class CallToArms(Action):
         super().__init__()
         self.target = target
         self.loudness = loudness
+
+    def explanation(self) -> str:
+        return 'calling for reinforcements'
 
     def can_remove(self):
         if self.creature.allegiance_to(self.target) != Allegiance.Hostile:
@@ -265,6 +292,9 @@ class ExploreAction(Action):
         self.y_dir = 1
         self.yy_dir = 1
         self.frustration = 0
+
+    def explanation(self) -> str:
+        return 'exploring'
 
     def think_about_changing_vertical_direction(self):
         if self.creature.y == 0:
@@ -360,6 +390,9 @@ class FollowAction(ExploreAction):
     def __init__(self, target):
         super().__init__()
         self.target = target
+
+    def explanation(self) -> str:
+        return f'following {self.target.get_identifier()}'
 
     def can_remove(self):
         if not self.target.alive:

@@ -202,6 +202,11 @@ class Creature:
         if len(self.actions) > 0:
             self.actions[0].do()
 
+        # purge completed actions
+        for a in self.actions:
+            if a.can_remove():
+                self.remove_action(a)
+
     def move_to(self, x, y):
         for t in self.traits:
             res = t.affect_move_to(x, y)

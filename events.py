@@ -5,7 +5,7 @@ class Event:
     def get_message(self) -> str:
         return ''
 
-    def get_partial_message(self) -> str:
+    def get_partial_message(self, verbose_explanation: bool) -> str:
         return ''
 
 
@@ -28,8 +28,8 @@ class DeathByCreatureEvent(DeathEvent):
         super().__init__(victim)
         self.killer = killer
 
-    def get_partial_message(self) -> str:
-        if self.killer.is_unique():
+    def get_partial_message(self, verbose_explanation: bool) -> str:
+        if self.killer.is_unique() or verbose_explanation:
             return f'was killed by {self.killer.get_identifier()}'
         else:
             return f'was killed by a {self.killer.type}'
@@ -46,7 +46,7 @@ class DrownedEvent(DeathEvent):
     Someone/something drowned
     """
 
-    def get_partial_message(self) -> str:
+    def get_partial_message(self, verbose_explanation: bool) -> str:
         return f'drowned'
 
     def get_message(self) -> str:
@@ -61,7 +61,7 @@ class BurntToDeathEvent(DeathEvent):
         super().__init__(victim=victim)
         self.cause = cause
 
-    def get_partial_message(self) -> str:
+    def get_partial_message(self, verbose_explanation: bool) -> str:
         return f'was burnt by {self.cause}'
 
     def get_message(self) -> str:

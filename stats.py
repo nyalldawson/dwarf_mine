@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import List
 
 from items import Treasure
 from creatures import Miner
@@ -11,6 +12,7 @@ class Stats():
     def __init__(self, screen, mine):
         self.screen = screen
         self.treasures_collected = defaultdict(list)
+        self.graveyard: List['DeathEvent'] = []
         self.deaths = []
         self.mine = mine
 
@@ -21,9 +23,11 @@ class Stats():
     def creature_died(self, event: 'DeathEvent'):
         if event.victim.is_unique():
             self.mine.push_message(event.get_message())
-            self.deaths.append((event.victim.get_identifier(), event.get_partial_message()))
+            self.deaths.append((event.victim.get_identifier(), event.get_partial_message(False)))
         else:
-            self.deaths.append((event.victim.type, event.get_partial_message()))
+            self.deaths.append((event.victim.type, event.get_partial_message(False)))
+
+        self.graveyard.append(event)
 
     def push_event(self, event: 'Event'):
         """
@@ -67,15 +71,25 @@ class Stats():
         MessageBox(self.screen,'\n'.join(message))
 
     def show_unique_creatures(self) -> bool:
-        for c in self.mine.creatures:
+
+        all_creatures = [(c, None) for c in self.mine.creatures] \
+                        +[(event.victim, event) for event in self.graveyard]
+
+        for c, death_event in all_creatures:
             if not c.is_unique():
                 continue
 
-            found_something = False
-            message = [c.get_identifier(),'', '']
+            title = c.get_identifier()
+            if death_event is not None:
+                title += ' (RIP)'
+
+            message = [title]
+            if death_event is not None:
+                message.append(death_event.get_partial_message(True))
+
+            message.extend(['', ''])
 
             if c.items:
-                found_something = True
                 message.append('Carrying:')
                 counter = Counter([i.type for i in c.items])
                 for t, count in counter.items():
@@ -87,7 +101,6 @@ class Stats():
                 message.append('')
 
             if c.knowledge:
-                found_something = True
                 message.append('Knowledge:')
                 for i in c.knowledge:
                     message.append(f'- {i.type}')
@@ -95,10 +108,23 @@ class Stats():
                 message.append('')
 
             if c.enchantments:
-                found_something = True
                 message.append('Enchantments:')
                 for i in c.enchantments:
                     message.append(f'- {i.type}')
+
+                message.append('')
+
+            if c.traits:
+                message.append('Traits:')
+                for i in c.traits:
+                    message.append(f'- {i.type}')
+
+                message.append('')
+
+            if c.actions and not death_event:
+                message.append('Currently:')
+                for i in c.actions:
+                    message.append(f'- {i.explanation()}')
 
                 message.append('')
 
