@@ -215,7 +215,7 @@ class SearchAction(GoToAction):
         self.cells = []
 
     def explanation(self) -> str:
-        return 'searching for something'
+        return f'searching for a {self.target.type}'
 
     def can_remove(self):
         if self.target is not None and self.target not in self.creature.mine.items:

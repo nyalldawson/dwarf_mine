@@ -80,21 +80,27 @@ class Stats():
             if not c.is_unique():
                 continue
 
-            title = c.get_identifier()
+            title = c.type
             if death_event is not None:
                 title += ' (RIP)'
 
             message = [title]
+            if c.tribe:
+                message.append(f'of the {c.tribe.name}')
             if death_event is not None:
                 message.append(death_event.get_partial_message(True))
 
             message.extend([''])
 
             items_found = [event.item for event in self.events if isinstance(event, FoundItemEvent) and event.found_by==c]
-            if items_found:
-                message.append(f'Found {len(items_found)} items')
             kills = [event for event in self.events if
                            isinstance(event, DeathByCreatureEvent) and event.killer == c]
+            if (items_found or kills) and death_event is not None:
+                message.append('While he lived he...')
+            elif not items_found and not kills and death_event is not None:
+                message.append('Did nothing at all before he died!')
+            if items_found:
+                message.append(f'Found {len(items_found)} items')
             if kills:
                 message.append(f'Killed {len(kills)} creatures')
 

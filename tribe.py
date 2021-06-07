@@ -9,7 +9,7 @@ class Tribe:
         self.id = id
         self.color = None
         self.leader_color = None
-        self.name = ''
+        self.name = 'Miners'
         self.min_x = 0
         self.max_x = 0
 
@@ -80,7 +80,7 @@ class Rangers(Tribe):
                 return ExploreAction()
 
             creature.default_action = create_explore_action
-            
+
             creature.push_action(ExploreAction())
             if creature.has_trait(Contagious):
                 creature.color = self.leader_color
