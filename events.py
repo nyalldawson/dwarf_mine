@@ -9,6 +9,16 @@ class Event:
         return ''
 
 
+class FoundItemEvent(Event):
+    """
+    Someone/something found something
+    """
+    def __init__(self, found_by: 'Creature', item: 'Item'):
+        super().__init__()
+        self.found_by = found_by
+        self.item = item
+
+
 class DeathEvent(Event):
     """
     Someone/something died

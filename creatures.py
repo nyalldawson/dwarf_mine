@@ -126,7 +126,9 @@ class Creature:
         self.items.append(item)
         self.mine.push_feedback('{} found a {}!'.format(self.get_identifier(), item.type))
         item.found_by(self)
-        self.mine.stats.item_collected(self, item)
+
+        from events import FoundItemEvent
+        self.mine.stats.push_event(FoundItemEvent(found_by=self, item=item))
 
     def hit(self, damage, attacker: 'Creature'):
         self.health -= damage

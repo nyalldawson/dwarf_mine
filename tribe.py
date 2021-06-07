@@ -76,7 +76,11 @@ class Rangers(Tribe):
 
         creature= random.choice([Miner, Snake])(**kwargs)
         if isinstance(creature, Snake):
-            creature.default_action = ExploreAction()
+            def create_explore_action():
+                return ExploreAction()
+
+            creature.default_action = create_explore_action
+            
             creature.push_action(ExploreAction())
             if creature.has_trait(Contagious):
                 creature.color = self.leader_color

@@ -5,6 +5,7 @@ from items import Treasure
 from creatures import Miner
 from message_box import MessageBox
 from collections import Counter
+from events import DeathEvent, FoundItemEvent, DeathByCreatureEvent
 
 
 class Stats():
@@ -12,9 +13,9 @@ class Stats():
     def __init__(self, screen, mine):
         self.screen = screen
         self.treasures_collected = defaultdict(list)
-        self.graveyard: List['DeathEvent'] = []
         self.deaths = []
         self.mine = mine
+        self.events: List['Event'] = []
 
     def item_collected(self, creature: 'Creature', item: 'Item'):
         if isinstance(item, Treasure) and isinstance(creature, Miner):
@@ -27,16 +28,16 @@ class Stats():
         else:
             self.deaths.append((event.victim.type, event.get_partial_message(False)))
 
-        self.graveyard.append(event)
-
     def push_event(self, event: 'Event'):
         """
         Pushes an event which occurred
         """
-        from events import DeathEvent
-
         if isinstance(event, DeathEvent):
             self.creature_died(event)
+        elif isinstance(event, FoundItemEvent):
+            self.item_collected(self, event.item)
+
+        self.events.append(event)
 
     def show_creatures(self):
         if self.show_unique_creatures():
@@ -73,7 +74,7 @@ class Stats():
     def show_unique_creatures(self) -> bool:
 
         all_creatures = [(c, None) for c in self.mine.creatures] \
-                        +[(event.victim, event) for event in self.graveyard]
+                        +[(event.victim, event) for event in self.events if isinstance(event, DeathEvent)]
 
         for c, death_event in all_creatures:
             if not c.is_unique():
@@ -87,7 +88,17 @@ class Stats():
             if death_event is not None:
                 message.append(death_event.get_partial_message(True))
 
-            message.extend(['', ''])
+            message.extend([''])
+
+            items_found = [event.item for event in self.events if isinstance(event, FoundItemEvent) and event.found_by==c]
+            if items_found:
+                message.append(f'Found {len(items_found)} items')
+            kills = [event for event in self.events if
+                           isinstance(event, DeathByCreatureEvent) and event.killer == c]
+            if kills:
+                message.append(f'Killed {len(kills)} creatures')
+
+            message.extend([''])
 
             if c.items:
                 message.append('Carrying:')
